@@ -36,7 +36,7 @@ def main():
                                   loaded_data.captions,
                                   loaded_data.im_addr)
 
-    sample_img, caption = sample_dataset[9000]
+    sample_img, caption = sample_dataset[4]
     sentences = captions_to_words(loaded_data.int2word, caption)
     for sentence in sentences:
         print(sentence)
