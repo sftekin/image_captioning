@@ -24,6 +24,7 @@ class RNN(nn.Module):
 
         self.layers = []
         self.output_feature_len = None
+        
         self.H = []
         self.C = []
         self.last_state_size = None
@@ -98,7 +99,6 @@ class RNN(nn.Module):
                 first_rnn_layer += 1
                 if first_rnn_layer is 1:
                     layer_param.update({"hidden_size": self.in_features})
-
                 layer_param.update({"input_size": input_size})
                 input_size = layer_param["hidden_size"]
 
