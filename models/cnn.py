@@ -14,9 +14,12 @@ class CNN(nn.Module):
         self.batch_size = params["batch_size"]
 
         self.layers = []
+        self.output_channels = None
         conv_layers = params["layers"]
         conv_params = params["params"]
         conv_params = self.__parameter_completion(conv_layers, conv_params)
+
+        self.output_size_reductions = []
         self.__construct_network(conv_layers, conv_params)
 
     def forward(self, _input):
@@ -49,6 +52,7 @@ class CNN(nn.Module):
             if layer_type == "conv":
                 layer_param.update({"in_channels": input_channels})
                 input_channels = layer_param["out_channels"]
+                self.output_channels = input_channels
 
             new_params[layer_name] = layer_param
         return new_params
@@ -67,8 +71,7 @@ class CNN(nn.Module):
 
         return
 
-    @staticmethod
-    def __construct_layer(layer_type, params):
+    def __construct_layer(self, layer_type, params):
         """
         Returns a layer from the layer_types dispatcher.
         :param layer_type: Type of the layer inferred from the layer name.
@@ -83,5 +86,23 @@ class CNN(nn.Module):
                        "softmax": nn.Softmax,
                        "sigmoid": nn.Sigmoid,
                        "softplus": nn.Softplus}
+        layer = layer_types[layer_type](**params)
+        if layer_type in ["conv", "max_pool", "average_pool"]:
+            self.__reduce_output_size(layer)
+        return layer
 
-        return layer_types[layer_type](**params)
+    def __reduce_output_size(self, layer):
+        f = layer.kernel_size
+        p = layer.padding
+        s = layer.stride
+
+        self.output_size_reductions.append(lambda x, y: ((x - f[0] + 2*p[0])/s[0] + 1,
+                                                         (y - f[1] + 2*p[1])/s[1] + 1))
+
+    def output_size(self, input_size):
+        current_size = input_size
+
+        for reduction in self.output_size_reductions:
+            current_size = reduction(*current_size)
+
+        return current_size

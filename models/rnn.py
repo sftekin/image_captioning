@@ -8,20 +8,23 @@ class RNN(nn.Module):
     Fully configurable RNN module. Can stack recurrent layers and activation layers
     to construct a RNN network. RNN layer can be GRU, LSTM or simple RNN.
     """
-    def __init__(self, params, state_encoder):
+    def __init__(self, params):
         """
         Initialization of the network.
         :param params: Parameter dictionary for the RNN layer.
-        :param state_encoder: Encoder MLP that converts the state of the last layer to
-                              an output.
         """
         super(RNN, self).__init__()
         self.params = params
-        self.state_encoder = state_encoder
         self.batch_size = params["batch_size"]
         self.in_features = params["in_features"]
 
+        self.word_length = params["word_length"]
+        self.sequence_length = params["sequence_length"]
+        self.state_encoder = None
+
         self.layers = []
+        self.output_feature_len = None
+        
         self.H = []
         self.C = []
         self.last_state_size = None
@@ -38,12 +41,14 @@ class RNN(nn.Module):
         :param input_: Input tensor (starts with the START word in first layer).
         :return: Generated sequence.
         """
-        sequence_length = 16
-        rnn_output = input_.clone()
+        rnn_output = torch.zeros(1, self.batch_size, self.word_length)
+
         self.__reset_states()
+        self.H[0] = input_.clone()
+        self.C[0] = torch.zeros_like(self.H[0]) if self.C[0] is not None else None
 
         generated_sequence = []
-        for t in range(sequence_length):
+        for t in range(self.sequence_length):
             for l, rnn_layer in enumerate(self.layers):
                 state = self.H[l].clone(), self.C[l].clone()
                 if l is not 0:
@@ -83,13 +88,17 @@ class RNN(nn.Module):
         :param layer_params: Parameters of the layer corresponding to each level.
         :return: Filled/corrected parameters.
         """
-        input_size = self.in_features
+        input_size = self.word_length
 
         new_params = {}
+        first_rnn_layer = 0
         for layer_name, layer_param in zip(layer_names, layer_params):
             layer_type = layer_name.split(" ")[0]
 
             if layer_type in ["lstm", "rnn", "gru"]:
+                first_rnn_layer += 1
+                if first_rnn_layer is 1:
+                    layer_param.update({"hidden_size": self.in_features})
                 layer_param.update({"input_size": input_size})
                 input_size = layer_param["hidden_size"]
 
@@ -142,6 +151,7 @@ class RNN(nn.Module):
             layer_type = layer.split(" ")[0]
             if layer_type in ["lstm", "gru", "rnn"]:
                 self.H.append(torch.zeros(1, self.batch_size, params["hidden_size"]))
+                self.output_feature_len = params["hidden_size"]
                 self.last_state_size = params["hidden_size"]
                 if layer_type == "lstm":
                     self.C.append(torch.zeros(1, self.batch_size, params["hidden_size"]))
@@ -151,3 +161,11 @@ class RNN(nn.Module):
                 self.H.append(None)
                 self.C.append(None)
         return
+
+    def set_encoder(self, state_encoder):
+        """
+        :param state_encoder: Encoder MLP that converts the state of the last layer to
+                              an output.
+        :return:
+        """
+        self.state_encoder = state_encoder

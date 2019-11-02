@@ -13,6 +13,7 @@ class MLP(nn.Module):
         self.params = params
 
         self.layers = []
+        self.output_feature_len = None
         mlp_layers = params["layers"]
         mlp_params = params["params"]
         mlp_params = self.__parameter_completion(mlp_layers, mlp_params)
@@ -47,6 +48,7 @@ class MLP(nn.Module):
             if layer_type == "linear":
                 layer_param.update({"in_features": in_features})
                 in_features = layer_param["out_features"]
+                self.output_feature_len = layer_param["out_features"]
 
             new_params[layer_name] = layer_param
         return new_params
