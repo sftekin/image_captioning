@@ -1,6 +1,5 @@
 import os
 import csv
-import h5py
 import pandas as pd
 
 from PIL import Image
