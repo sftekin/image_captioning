@@ -21,7 +21,7 @@ def main():
     batch_gen = BatchGenerator(dataset_path, images_path)
     for batch_idx, (image, caption) in enumerate(batch_gen.generate('test', batch_format='embedding')):
         print(image.shape)  # (b, s, height, width)
-        print(caption.shape)  # (b, s, ember_dim)
+        print(caption.shape)  # (b, s, embed_dim)
 
 
 if __name__ == '__main__':
