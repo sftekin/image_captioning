@@ -3,14 +3,15 @@ import pickle
 import codecs
 import numpy as np
 
-np.random.seed(42)
+np.random.seed(42)  # To produce same vectors for appended tokens
 
 
 class Embedding:
 
-    def __init__(self, embedding_path, vector_dim=300):
+    def __init__(self, embedding_path, vector_dim=300, limited=False):
         self.vector_dim = vector_dim
         self.embedding_path = embedding_path
+        self.limited = limited
         self.vocab_dict, self.vectors = self.__create_embeddings()
         self.__append_tokens()
 
@@ -34,7 +35,10 @@ class Embedding:
             vocab_dict = pickle.load(dict_file)
             vectors = np.load(vector_path)
         else:
-            embed_txt = os.path.join(self.embedding_path, 'glove_original.txt')
+            if self.limited:
+                embed_txt = os.path.join(self.embedding_path, 'limited_glove_vectors.txt')
+            else:
+                embed_txt = os.path.join(self.embedding_path, 'glove_original.txt')
             vocab_dict = {}
             with codecs.open(embed_txt, 'r', "UTF-8") as f:
                 content = f.readlines()
