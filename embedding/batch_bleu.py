@@ -43,6 +43,5 @@ if __name__ == '__main__':
 
     print('BLEU score for individual '
           'sentences and mean of scores :{}'.format(batch_bleu(reference_corpus,
-                                                              translation_corpus,
-                                                              cumulative_bleu=False)))
-
+                                                               translation_corpus,
+                                                               cumulative_bleu=False)))
