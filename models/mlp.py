@@ -18,6 +18,7 @@ class MLP(nn.Module):
         mlp_params = params["params"]
         mlp_params = self.__parameter_completion(mlp_layers, mlp_params)
         self.__construct_network(mlp_layers, mlp_params)
+        self.modules = nn.ModuleList(self.layers)
 
     def forward(self, _input):
         """

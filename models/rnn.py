@@ -19,8 +19,10 @@ class RNN(nn.Module):
         self.in_features = params["in_features"]
 
         self.word_length = params["word_length"]
+        self.embed_length = params["embed_length"]
         self.sequence_length = params["sequence_length"]
         self.state_encoder = None
+        self.embedding = None
 
         self.layers = []
         self.output_feature_len = None
@@ -33,6 +35,7 @@ class RNN(nn.Module):
         rnn_params = self.__parameter_completion(rnn_layers, rnn_params)
         self.__construct_network(rnn_layers, rnn_params)
         self.__init_states(rnn_layers, rnn_params)
+        self.modules = nn.ModuleList(self.layers)
 
     def forward(self, input_):
         """
@@ -41,7 +44,9 @@ class RNN(nn.Module):
         :param input_: Input tensor (starts with the START word in first layer).
         :return: Generated sequence.
         """
-        rnn_output = torch.zeros(1, self.batch_size, self.word_length)
+        start_word = torch.zeros(self.batch_size, self.word_length)
+        start_word[:, 1] = torch.ones(self.batch_size)
+        rnn_output = self.embedding(start_word).unsqueeze(dim=0)
 
         self.__reset_states()
         self.H[0] = input_.clone()
@@ -66,6 +71,7 @@ class RNN(nn.Module):
             last_layer_state = self.H[-1].clone()
             rnn_output = self.state_encoder(last_layer_state)
             generated_sequence.append(rnn_output)
+            rnn_output = self.embedding(rnn_output)
 
         return torch.cat(generated_sequence, dim=0)
 
@@ -88,7 +94,7 @@ class RNN(nn.Module):
         :param layer_params: Parameters of the layer corresponding to each level.
         :return: Filled/corrected parameters.
         """
-        input_size = self.word_length
+        input_size = self.embed_length
 
         new_params = {}
         first_rnn_layer = 0
@@ -162,10 +168,11 @@ class RNN(nn.Module):
                 self.C.append(None)
         return
 
-    def set_encoder(self, state_encoder):
+    def set_encoder(self, state_encoder, embedding):
         """
         :param state_encoder: Encoder MLP that converts the state of the last layer to
                               an output.
         :return:
         """
         self.state_encoder = state_encoder
+        self.embedding = embedding

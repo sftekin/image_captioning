@@ -21,6 +21,7 @@ class CNN(nn.Module):
 
         self.output_size_reductions = []
         self.__construct_network(conv_layers, conv_params)
+        self.modules = nn.ModuleList(self.layers)
 
     def forward(self, _input):
         """
@@ -92,9 +93,9 @@ class CNN(nn.Module):
         return layer
 
     def __reduce_output_size(self, layer):
-        f = layer.kernel_size
-        p = layer.padding
-        s = layer.stride
+        f = layer.kernel_size if isinstance(layer.kernel_size, tuple) else (layer.kernel_size, layer.kernel_size)
+        p = layer.padding if isinstance(layer.padding, tuple) else (layer.padding, layer.padding)
+        s = layer.stride if isinstance(layer.stride, tuple) else (layer.stride, layer.stride)
 
         self.output_size_reductions.append(lambda x, y: ((x - f[0] + 2*p[0])/s[0] + 1,
                                                          (y - f[1] + 2*p[1])/s[1] + 1))
