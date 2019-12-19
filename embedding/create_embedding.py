@@ -12,12 +12,11 @@ np.random.seed(42)  # To produce same vectors for appended tokens
 
 class Embedding(nn.Module):
 
-    def __init__(self, word2int, int2word, vector_dim=300, device='cpu'):
+    def __init__(self, dataset_path, vector_dim=300, device='cpu'):
         nn.Module.__init__(self)
 
-        self.word2int = word2int
-        self.int2word = int2word
-        self.num_vector = len(word2int)
+        self.word2int, self.int2word = self.__create_dicts(dataset_path)
+        self.num_vector = len(self.word2int)
         self.vector_dim = vector_dim
 
         # Init vectors to uniform distribution [-1, 1]
@@ -104,6 +103,25 @@ class Embedding(nn.Module):
         for idx, token in enumerate(['x_UNK_', 'x_START_', 'x_END_', 'xWhile', 'x_NULL_']):
             vocab_dict[token] = idx + num_vector
         return vocab_dict, vectors
+
+    @staticmethod
+    def __create_dicts(dataset_path):
+
+        word2int_csv_path = os.path.join(dataset_path, 'word2int.csv')
+
+        data = []
+        with open(word2int_csv_path, mode='r') as infile:
+            reader = csv.reader(infile)
+            for row in reader:
+                data.append(row)
+
+        word2int = {}
+        for word, value in zip(data[0], data[1]):
+            word2int[word] = int(float(value))
+
+        word2int = {k: v for k, v in sorted(word2int.items(), key=lambda item: item[1])}
+        int2word = {v: k for k, v in word2int.items()}
+        return word2int, int2word
 
 
 if __name__ == '__main__':
