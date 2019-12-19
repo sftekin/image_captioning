@@ -16,7 +16,6 @@ class ImageDataset(Dataset):
         self.captions_word = params['captions_word']
         self.im_addr = params['im_addr']
         self.embedding = params['embedding']
-        self.batch_format = params['batch_format']
         self.transformer = params['transformer']
 
     def __len__(self):
@@ -31,13 +30,7 @@ class ImageDataset(Dataset):
         caption_idx = self.im_addr[self.im_addr['im_addr'] == image_id].index
         selected_caption_idx = np.random.choice(caption_idx.values)
 
-        if self.batch_format == 'integer':
-            target_captions = self.captions_int.iloc[selected_caption_idx].values
-        elif self.batch_format == 'embedding':
-            target_captions = self.captions_word.iloc[selected_caption_idx].values
-            target_captions = self.embedding.create_word2embed(target_captions.tolist())
-        else:
-            target_captions = self.captions_word.iloc[selected_caption_idx].values
+        target_captions = self.captions_int.iloc[selected_caption_idx].values
 
         image = Image.open(im_path)
         image = image.convert('RGB')

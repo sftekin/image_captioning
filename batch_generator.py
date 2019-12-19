@@ -23,22 +23,18 @@ class BatchGenerator(LoadData):
 
         self.embedding = Embedding(self.embed_path, self.vector_dim)
 
-        self.dataset_dict = {i: self.__create_data(batch_format=i)[0]
-                             for i in ['embedding', 'integer', 'word']}
+        self.dataset_dict = self.__create_data()[0]
+        self.dataloader_dict = self.__create_data()[1]
 
-        self.dataloader_dict = {i: self.__create_data(batch_format=i)[1]
-                                for i in ['embedding', 'integer', 'word']}
-
-    def generate(self, data_type, batch_format='embedding'):
+    def generate(self, data_type):
         """
         :param data_type: can be 'test', 'train' and 'validation'
-        :param batch_format: can be 'integer', 'embedding'
         :return: img tensor, label numpy_array
         """
-        selected_loader = self.dataloader_dict[batch_format][data_type]
+        selected_loader = self.dataloader_dict[data_type]
         yield from selected_loader
 
-    def __create_data(self, batch_format):
+    def __create_data(self):
         data_dict = self.__split_data()
 
         if self.use_transform:
@@ -52,7 +48,7 @@ class BatchGenerator(LoadData):
         else:
             im_transform = None
 
-        im_datasets = {}
+        im_dataset = {}
         for i in ['test', 'train', 'validation']:
             params = {
                 'image_path_names': data_dict[i],
@@ -60,18 +56,18 @@ class BatchGenerator(LoadData):
                 'captions_word': self.caption_words,
                 'im_addr': self.image_addr,
                 'embedding': self.embedding,
-                'batch_format': batch_format,
                 'transformer': im_transform
             }
-            im_datasets[i] = ImageDataset(params)
+            im_dataset[i] = ImageDataset(params)
 
-        im_dataloaders = {i: DataLoader(im_datasets[i],
-                                        batch_size=self.batch_size,
-                                        shuffle=self.shuffle,
-                                        num_workers=self.num_works)
-                          for i in ['test', 'train', 'validation']}
+        im_loader = {}
+        for i in ['test', 'train', 'validation']:
+            im_loader[i] = DataLoader(im_dataset[i],
+                                      batch_size=self.batch_size,
+                                      shuffle=self.shuffle,
+                                      num_workers=self.num_works)
 
-        return im_datasets, im_dataloaders
+        return im_dataset, im_loader
 
     def __split_data(self):
         dataset_length = len(self.image_paths)

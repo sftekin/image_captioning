@@ -77,8 +77,9 @@ class LoadData:
                 data.append(row)
 
         word2int = {}
-        int2word = {}
         for word, value in zip(data[0], data[1]):
-            word2int[word] = value
-            int2word[value] = word
+            word2int[word] = int(float(value))
+
+        word2int = {k: v for k, v in sorted(word2int.items(), key=lambda item: item[1])}
+        int2word = {v: k for k, v in word2int.items()}
         return word2int, int2word
