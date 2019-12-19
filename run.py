@@ -1,7 +1,6 @@
-import os
 import config
+from data_extractor import get_data
 from models.cnn_lstm import CNNLSTM
-
 from batch_generator import BatchGenerator
 
 
@@ -11,12 +10,13 @@ def main():
     parameters = model_parameters.copy()
     parameters.update(data_parameters)
 
+    get_data(parameters)
+
     model = CNNLSTM(parameters)
-    batch_gen = BatchGenerator(parameters["dataset_path"], parameters["image_path"])
+    batch_gen = BatchGenerator(**parameters)
 
     for idx, (im, cap) in enumerate(batch_gen.generate('train')):
-        loss = model.fit(im, cap)
-        print("\rTraining Loss: " + str(loss), flush=True, end="")
+        model.fit(im, cap)
 
 
 if __name__ == '__main__':

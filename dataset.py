@@ -30,7 +30,7 @@ class ImageDataset(Dataset):
         caption_idx = self.im_addr[self.im_addr['im_addr'] == image_id].index
         selected_caption_idx = np.random.choice(caption_idx.values)
 
-        target_captions = self.captions_int.iloc[selected_caption_idx].values
+        target_captions = self.captions_int.iloc[selected_caption_idx].values[1:]
 
         image = Image.open(im_path)
         image = image.convert('RGB')

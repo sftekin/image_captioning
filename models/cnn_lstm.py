@@ -9,10 +9,9 @@ class CNNLSTM(BaseModel):
 
     def _construct_model(self):
         self.image_process = VGG16(self.params["word_length"],
+                                   self.params["input_size"],
                                    self.params["pretrained_cnn"])
 
-        self.embedding = self.params["embedding"]
-
         self.word_process = RNN(embedding=self.embedding,
-                                sequence_length=self.params["sequence_length"])
+                                **self.params)
 

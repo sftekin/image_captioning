@@ -23,8 +23,6 @@ class Embedding(nn.Module):
         # Init vectors to uniform distribution [-1, 1]
         self.vectors = -2 * torch.rand(self.num_vector, self.vector_dim) + 1
         self.vectors = Variable(self.vectors).to(device)
-        self.vocab_dict = {word: self.vectors[i].clone()
-                           for i, word in enumerate(self.word2int.keys())}
 
     def load_pre_trained(self, embedding_path, limited=False):
         vocab_load, vectors_load = self.__create_embeddings(embedding_path, limited)
@@ -124,6 +122,11 @@ class Embedding(nn.Module):
         word2int = {k: v for k, v in sorted(word2int.items(), key=lambda item: item[1])}
         int2word = {v: k for k, v in word2int.items()}
         return word2int, int2word
+
+    @property
+    def vocab_dict(self):
+        return {word: self.vectors[i].clone()
+                for i, word in enumerate(self.word2int.keys())}
 
 
 if __name__ == '__main__':

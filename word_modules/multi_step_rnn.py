@@ -3,14 +3,16 @@ import torch.nn as nn
 
 
 class MultiStepRNN(nn.Module):
-    def __init__(self, embedding, sequence_length):
+    def __init__(self, **kwargs):
         super(MultiStepRNN, self).__init__()
-        self.embedding = embedding
+        self.batch_size = kwargs["batch_size"]
+        self.embedding = kwargs["embedding"]
+        self.input_size = kwargs["word_length"]
 
         self.state = None
         self.model = None
 
-        self.sequence_length = sequence_length
+        self.sequence_length = kwargs["sequence_length"]
 
     def forward(self, features):
         """
@@ -18,16 +20,16 @@ class MultiStepRNN(nn.Module):
         :param features: (b, f)
         :return: (b, l, w)
         """
-        self.__init_states(features)
+        self._init_states(features)
 
-        first_word = self.embedding["x_START_"]
-        embedded_input = self.embedding(first_word)
+        embedded_input = self.embedding["x_START_"].unsqueeze(dim=0).repeat(self.batch_size, 1).unsqueeze(0)
 
         words = []
         for l in range(self.sequence_length):
             out, self.state = self.model(embedded_input, self.state)
-            word = self.embedding(out)
-            words.append(word)
+            out = nn.Softmax(dim=2)(out)
+            embedded_input = self.embedding(out)
+            words.append(out.squeeze(dim=0))
 
         words = torch.stack(words, dim=1)
         return words
@@ -46,8 +48,10 @@ class MultiStepRNN(nn.Module):
         sentence = []
         for l in range(self.sequence_length):
             out, self.state = self.model(embedded_input, self.state)
-            word = self.embedding(out).max(1)
-            sentence.append(word)
+            out = nn.Softmax()(out)
+            embedded_input = self.embedding(out)
+            word = out.max(1)
+            sentence.append(word.squeeze(dim=0))
 
         words = torch.stack(sentence, dim=1)
         return words
@@ -55,11 +59,11 @@ class MultiStepRNN(nn.Module):
 
 class RNN(MultiStepRNN):
     def __init__(self, **kwargs):
-        super(RNN, self).__init__(kwargs["embedding"], kwargs["sequence_length"])
+        super(RNN, self).__init__(**kwargs)
 
-        self.model = nn.RNN(input_size=kwargs["input_size"],
+        self.model = nn.RNN(input_size=self.embedding.vector_dim,
                             hidden_size=kwargs["hidden_size"],
                             num_layers=kwargs["num_layers"])
 
-    def __init_states(self, features):
-        self.state = features
+    def _init_states(self, features):
+        self.state = features.unsqueeze(dim=0)

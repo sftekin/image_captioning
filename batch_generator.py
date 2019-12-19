@@ -9,8 +9,8 @@ from embedding.create_embedding import Embedding
 
 class BatchGenerator(LoadData):
 
-    def __init__(self, dataset_path, images_path, **kwargs):
-        super(BatchGenerator, self).__init__(dataset_path, images_path)
+    def __init__(self, **kwargs):
+        super(BatchGenerator, self).__init__(kwargs["dataset_path"], kwargs["image_path"])
 
         self.batch_size = kwargs.get('batch_size', 8)
         self.shuffle = kwargs.get('shuffle', True)
@@ -20,6 +20,7 @@ class BatchGenerator(LoadData):
         self.embed_path = kwargs.get('embedding_path', 'embedding')
         self.vector_dim = kwargs.get('vector_dim', 300)
         self.use_transform = kwargs.get('use_transform', True)
+        self.input_size = kwargs.get("input_size", (224, 224))
 
         self.embedding = Embedding(self.embed_path, self.vector_dim)
 
@@ -39,7 +40,7 @@ class BatchGenerator(LoadData):
 
         if self.use_transform:
             im_transform = transforms.Compose([
-                transforms.RandomResizedCrop(224),
+                transforms.RandomResizedCrop(self.input_size),
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
                 transforms.Normalize(mean=[0.485, 0.456, 0.406],

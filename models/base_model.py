@@ -1,6 +1,7 @@
 import torch.nn as nn
 from losses import loss_dict
 from optimizers import optimizer_dict
+from embedding.create_embedding import Embedding
 
 
 class BaseModel(nn.Module):
@@ -10,12 +11,14 @@ class BaseModel(nn.Module):
         self.params = params
 
         self.image_process = None
-        self.embedding = None
         self.word_process = None
+        self.embedding = Embedding(params["dataset_path"])
 
         self._construct_model()
-        self.optimizer = optimizer_dict[params](self.parameters(), **params["optimizer_params"])
-        self.criterion = loss_dict[params["loss"]](**params["loss_params"])
+        self.optimizer = optimizer_dict[params["optimizer_type"]](self.parameters(),
+                                                                  **params["optimizer_params"])
+
+        self.criterion = loss_dict[params["criterion_type"]](**params["criterion_params"])
 
     def forward(self, input_):
         """
@@ -38,11 +41,17 @@ class BaseModel(nn.Module):
         generated_words = self(batch_x)
         self.optimizer.zero_grad()
 
-        loss = self.criterion(generated_words, batch_y)
-        loss.backward()
+        def closure():
+            loss = 0
 
-        self.optimizer.step(loss)
-        return loss.item()
+            for l in range(self.params["sequence_length"]):
+                cur_word = generated_words.narrow(1, l, 1).squeeze(dim=1)
+                loss += self.criterion(cur_word, batch_y[:, l])
+            loss.backward(retain_graph=True)
+
+            print(loss.item())
+
+        self.optimizer.step(closure)
 
     def caption(self, batch_x):
         """
