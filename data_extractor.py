@@ -31,8 +31,7 @@ def get_data(file_name):
         image_id = data["train_imid"][i]
         image_url = str(data["train_url"][i])[2:-2]
         try:
-            urllib.request.urlretrieve(image_url, "./dataset/images/" + str(i) +
-                                       "_" + str(image_id) + ".jpg")
+            urllib.request.urlretrieve(image_url, "./dataset/images/" + str(image_id) + ".jpg")
 
         except:
             corrupted_ids.append(i)
@@ -44,3 +43,7 @@ def get_data(file_name):
 
     print("Corrupted_ids:")
     print(len(corrupted_ids))
+
+
+if __name__ == '__main__':
+    get_data('dataset/eee443_project_dataset_train.h5')
