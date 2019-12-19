@@ -1,4 +1,5 @@
 import os
+import csv
 import pickle
 import codecs
 import numpy as np
@@ -22,7 +23,8 @@ class Embedding(nn.Module):
         # Init vectors to uniform distribution [-1, 1]
         self.vectors = -2 * torch.rand(self.num_vector, self.vector_dim) + 1
         self.vectors = Variable(self.vectors).to(device)
-        self.vocab_dict = {word: self.vectors[i].clone() for i, word in enumerate(word2int.keys())}
+        self.vocab_dict = {word: self.vectors[i].clone()
+                           for i, word in enumerate(self.word2int.keys())}
 
     def load_pre_trained(self, embedding_path, limited=False):
         vocab_load, vectors_load = self.__create_embeddings(embedding_path, limited)
@@ -125,12 +127,9 @@ class Embedding(nn.Module):
 
 
 if __name__ == '__main__':
-    from load_data import LoadData
-
-    data = LoadData('../dataset', '../dataset/images')
 
     glove_name = 'embedding'
-    embed = Embedding(data.word2int, data.int2word)
+    embed = Embedding('../dataset')
 
     print(embed['x_START_'])
 
