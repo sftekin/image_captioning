@@ -36,7 +36,7 @@ class CNNLSTMParams(Params):
         self.num_layers = 1
 
         self.optimizer_type = "ADAM"
-        self.optimizer_params = {"lr": 0.01}
+        self.optimizer_params = {"lr": 0.001}
 
         self.criterion_type = "CE"
         self.criterion_params = {}

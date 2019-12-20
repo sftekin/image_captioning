@@ -6,7 +6,7 @@ import urllib.request
 def get_data(params):
     image_path = params["image_path"]
 
-    if len(os.listdir(image_path)) > 64:
+    if len(os.listdir(image_path)) > 100:
         return
 
     url_file = open(params["url_path"], "r")

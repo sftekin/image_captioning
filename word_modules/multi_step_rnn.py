@@ -26,6 +26,8 @@ class MultiStepRNN(nn.Module):
 
         words = []
         for l in range(self.sequence_length):
+            self.state = self.state.detach() if not isinstance(self.state, list) else [self.state[0].detach(),
+                                                                                       self.state[1].detach()]
             out, self.state = self.model(embedded_input, self.state)
             out = nn.Softmax(dim=2)(out)
             embedded_input = self.embedding(out)
