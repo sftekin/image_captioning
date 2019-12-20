@@ -8,8 +8,6 @@ from PIL import Image
 class LoadData:
 
     def __init__(self, dataset_path, images_path):
-
-        self.word2int, self.int2word = self.__create_dicts(dataset_path)
         self.caption_words = self.__create_caption_words(dataset_path)
         self.captions_int = self.__create_captions_int(dataset_path)
         self.image_addr = self.__create_image_addr(dataset_path)
@@ -64,21 +62,3 @@ class LoadData:
                 image_paths.remove(im_path)
 
         return image_paths
-
-    @staticmethod
-    def __create_dicts(dataset_path):
-
-        word2int_csv_path = os.path.join(dataset_path, 'word2int.csv')
-
-        data = []
-        with open(word2int_csv_path, mode='r') as infile:
-            reader = csv.reader(infile)
-            for row in reader:
-                data.append(row)
-
-        word2int = {}
-        int2word = {}
-        for word, value in zip(data[0], data[1]):
-            word2int[word] = value
-            int2word[value] = word
-        return word2int, int2word

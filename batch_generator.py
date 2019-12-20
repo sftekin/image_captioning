@@ -9,10 +9,10 @@ from embedding.create_embedding import Embedding
 
 class BatchGenerator(LoadData):
 
-    def __init__(self, dataset_path, images_path, **kwargs):
-        super(BatchGenerator, self).__init__(dataset_path, images_path)
+    def __init__(self, **kwargs):
+        super(BatchGenerator, self).__init__(kwargs["dataset_path"], kwargs["image_path"])
 
-        self.batch_size = kwargs.get('batch_size', 64)
+        self.batch_size = kwargs.get('batch_size', 8)
         self.shuffle = kwargs.get('shuffle', True)
         self.num_works = kwargs.get('num_works', 4)
         self.test_ratio = kwargs.get('test_ratio', 0.1)
@@ -20,30 +20,27 @@ class BatchGenerator(LoadData):
         self.embed_path = kwargs.get('embedding_path', 'embedding')
         self.vector_dim = kwargs.get('vector_dim', 300)
         self.use_transform = kwargs.get('use_transform', True)
+        self.input_size = kwargs.get("input_size", (224, 224))
 
         self.embedding = Embedding(self.embed_path, self.vector_dim)
 
-        self.dataset_dict = {i: self.__create_data(batch_format=i)[0]
-                             for i in ['embedding', 'integer', 'word']}
+        self.dataset_dict = self.__create_data()[0]
+        self.dataloader_dict = self.__create_data()[1]
 
-        self.dataloader_dict = {i: self.__create_data(batch_format=i)[1]
-                                for i in ['embedding', 'integer', 'word']}
-
-    def generate(self, data_type, batch_format='embedding'):
+    def generate(self, data_type):
         """
         :param data_type: can be 'test', 'train' and 'validation'
-        :param batch_format: can be 'integer', 'embedding'
         :return: img tensor, label numpy_array
         """
-        selected_loader = self.dataloader_dict[batch_format][data_type]
+        selected_loader = self.dataloader_dict[data_type]
         yield from selected_loader
 
-    def __create_data(self, batch_format):
+    def __create_data(self):
         data_dict = self.__split_data()
 
         if self.use_transform:
             im_transform = transforms.Compose([
-                transforms.RandomResizedCrop(224),
+                transforms.RandomResizedCrop(self.input_size),
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
                 transforms.Normalize(mean=[0.485, 0.456, 0.406],
@@ -52,7 +49,7 @@ class BatchGenerator(LoadData):
         else:
             im_transform = None
 
-        im_datasets = {}
+        im_dataset = {}
         for i in ['test', 'train', 'validation']:
             params = {
                 'image_path_names': data_dict[i],
@@ -60,18 +57,18 @@ class BatchGenerator(LoadData):
                 'captions_word': self.caption_words,
                 'im_addr': self.image_addr,
                 'embedding': self.embedding,
-                'batch_format': batch_format,
                 'transformer': im_transform
             }
-            im_datasets[i] = ImageDataset(params)
+            im_dataset[i] = ImageDataset(params)
 
-        im_dataloaders = {i: DataLoader(im_datasets[i],
-                                        batch_size=self.batch_size,
-                                        shuffle=self.shuffle,
-                                        num_workers=self.num_works)
-                          for i in ['test', 'train', 'validation']}
+        im_loader = {}
+        for i in ['test', 'train', 'validation']:
+            im_loader[i] = DataLoader(im_dataset[i],
+                                      batch_size=self.batch_size,
+                                      shuffle=self.shuffle,
+                                      num_workers=self.num_works)
 
-        return im_datasets, im_dataloaders
+        return im_dataset, im_loader
 
     def __split_data(self):
         dataset_length = len(self.image_paths)
