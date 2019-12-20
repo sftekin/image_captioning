@@ -2,19 +2,24 @@ import os
 import config
 import pandas as pd
 from data_extractor import get_data
-from models.cnn_lstm import CNNLSTM
 from batch_generator import BatchGenerator
+from models.vgg_rnn import VggLstm
+
+
+models = {"vgglstm": {"model": VggLstm,
+                      "params": config.VggLstmParams}
+          }
 
 extract_data = False
 
 if __name__ == '__main__':
     data_parameters = config.DataParams().__dict__
-    model_parameters = config.CNNLSTMParams().__dict__
+    model_parameters = models[data_parameters["model"]]["params"]().__dict__
 
     samples = os.listdir("./dataset/images/")
     image_samples = [sample for sample in samples if sample.split(".")[-1] in ["png", "jpg"]]
 
-    code_dictionary = pd.read_csv(data_parameters["data_path"]["code_dict_path"])
+    code_dictionary = pd.read_csv(data_parameters["dataset_path"]["code_dict_path"])
 
     if not image_samples or extract_data:
         file_name = "./dataset/eee443_project_dataset_train.h5"
@@ -27,9 +32,9 @@ if __name__ == '__main__':
                                      sequence_length=data_parameters["sequence_length"],
                                      word_length=data_parameters["word_length"])
 
-    model = CNNLSTM(data_params=data_parameters,
-                    params=model_parameters,
-                    code_dictionary=code_dictionary)
+    model = models[data_parameters["model"]]["model"](data_params=data_parameters,
+                                                      params=model_parameters,
+                                                      code_dictionary=code_dictionary)
 
     for _ in range(0):
         batch_x, batch_y = next(batch_generator)

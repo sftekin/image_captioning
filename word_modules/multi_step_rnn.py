@@ -5,7 +5,6 @@ import torch.nn as nn
 class MultiStepRNN(nn.Module):
     def __init__(self, **kwargs):
         super(MultiStepRNN, self).__init__()
-        self.batch_size = kwargs["batch_size"]
         self.embedding = kwargs["embedding"]
         self.input_size = kwargs["word_length"]
 
@@ -21,8 +20,8 @@ class MultiStepRNN(nn.Module):
         :return: (b, l, w)
         """
         self._init_states(features)
-
-        embedded_input = self.embedding["x_START_"].unsqueeze(dim=0).repeat(self.batch_size, 1).unsqueeze(0)
+        batch_size = features.shape[0]
+        embedded_input = self.embedding["x_START_"].unsqueeze(dim=0).repeat(batch_size, 1).unsqueeze(0)
 
         words = []
         for l in range(self.sequence_length):
@@ -58,14 +57,3 @@ class MultiStepRNN(nn.Module):
         words = torch.stack(sentence, dim=1)
         return words
 
-
-class RNN(MultiStepRNN):
-    def __init__(self, **kwargs):
-        super(RNN, self).__init__(**kwargs)
-
-        self.model = nn.RNN(input_size=self.embedding.vector_dim,
-                            hidden_size=kwargs["hidden_size"],
-                            num_layers=kwargs["num_layers"])
-
-    def _init_states(self, features):
-        self.state = features.unsqueeze(dim=0)
