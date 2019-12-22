@@ -10,6 +10,7 @@ class BaseImageModule(nn.Module):
         self.model = None
         self.input_size = input_size
         self.feature_dim = None
+        self.rnn_flow = None
 
     def forward(self, images):
         """
@@ -43,6 +44,9 @@ class BaseImageModule(nn.Module):
                 param.requires_grad = False
 
         self._get_feature_dim()
-        classifier = nn.Linear(in_features=self.feature_dim, out_features=output_dim).to(self.device)
+        if self.rnn_flow == "RNN":
+            classifier = nn.Linear(in_features=self.feature_dim, out_features=output_dim).to(self.device)
+        else:
+            classifier = nn.Sequential()
         self.model.classifier = classifier
         self.model.fc = classifier

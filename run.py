@@ -42,6 +42,7 @@ def main():
             print("\rTraining: " + str(loss) + " [" + "="*idx, end="", flush=True)
         print("]")
 
+        """
         (im, cap) = next(batch_gen.generate("train"))
         generated_caption = model.caption(im)
         random_idx = random.sample(list(range(parameters["batch_size"])), 5)
@@ -50,8 +51,10 @@ def main():
             img = im[idx]
             img = (img.permute(1, 2, 0) - img.min())/(img.max() - img.min())
             plt.imshow(img)
+            plt.tight_layout()
             plt.title(cap)
             plt.show()
+        """
 
 
 if __name__ == '__main__':

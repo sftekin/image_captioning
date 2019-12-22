@@ -1,7 +1,7 @@
 from base_model import BaseModel
 from image_modules.inception import Inceptionv3
-from word_modules.rnn import RNN
-from word_modules.lstm import LSTM
+from word_modules.rnn import rnn_models
+from word_modules.lstm import lstm_models
 
 
 class InceptionRNN(BaseModel):
@@ -10,8 +10,9 @@ class InceptionRNN(BaseModel):
 
     def _construct_model(self):
         self.image_process = Inceptionv3(**self.params)
-        self.word_process = RNN(embedding=self.embedding,
-                                **self.params)
+        self.params["feature_dim"] = self.image_process.feature_dim
+        self.word_process = rnn_models[self.params["rnn_flow"]](embedding=self.embedding,
+                                                                **self.params)
 
 
 class InceptionLSTM(BaseModel):
@@ -20,5 +21,6 @@ class InceptionLSTM(BaseModel):
 
     def _construct_model(self):
         self.image_process = Inceptionv3(**self.params)
-        self.word_process = LSTM(embedding=self.embedding,
-                                 **self.params)
+        self.params["feature_dim"] = self.image_process.feature_dim
+        self.word_process = lstm_models[self.params["rnn_flow"]](embedding=self.embedding,
+                                                                 **self.params)

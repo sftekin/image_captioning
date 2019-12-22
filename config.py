@@ -13,7 +13,7 @@ class DataParams(Params):
     def __init__(self):
         super(DataParams, self).__init__()
 
-        self.model_name = "vgglstm"
+        self.model_name = "inceptionlstm"
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
         self.image_path = "./dataset/images/"
@@ -22,18 +22,20 @@ class DataParams(Params):
         self.url_path = "./dataset/img_url.csv"
 
         self.load_embedding = True
-        self.num_epochs = 100
+        self.num_epochs = 1000
         self.batch_size = 100
         self.sequence_length = 16
         self.word_length = 1004
-        self.input_size = (224, 224)
+        self.input_size = (380, 380)
         self.min_num_captions = 3
 
         self.train_length = []
         self.validation_length = []
         self.test_length = []
 
-        self.hidden_size = self.word_length
+        self.rnn_flow = "parallel"
+
+        self.hidden_size = self.word_length if self.rnn_flow == "RNN" else 64
 
 
 class VggRNNParams(Params):
@@ -89,7 +91,7 @@ class InceptionLSTMParams(Params):
 
         self.num_layers = 1
 
-        self.optimizer_type = "ADAM"
+        self.optimizer_type = "SGD"
         self.optimizer_params = {"lr": 0.01}
 
         self.criterion_type = "CE"

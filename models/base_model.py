@@ -51,7 +51,7 @@ class BaseModel(nn.Module):
 
         for l in range(self.params["sequence_length"]):
             cur_word = generated_words.narrow(1, l, 1).squeeze(dim=1)
-            loss += self.criterion(cur_word, batch_y[:, l])
+            loss += self.criterion(cur_word, batch_y[:, l]) / batch_x.shape[0]
         loss.backward(retain_graph=True)
 
         self.optimizer.step()
