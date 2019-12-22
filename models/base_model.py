@@ -39,6 +39,9 @@ class BaseModel(nn.Module):
         :param batch_y: (b, l) Caption of the input image.
         :return:
         """
+        batch_x = batch_x.to(self.params["device"])
+        batch_y = batch_y.to(self.params["device"])
+
         generated_words = self(batch_x)
         self.optimizer.zero_grad()
 
@@ -58,6 +61,7 @@ class BaseModel(nn.Module):
         :param batch_x: (b, d, m, n)
         :return:
         """
+        batch_x = batch_x.to(self.params["device"])
         with torch.no_grad():
             image_features = self.image_process(batch_x)                 # (b, f)
             generated_words = self.word_process.caption(image_features)  # (b, l)

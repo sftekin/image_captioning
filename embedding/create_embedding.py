@@ -45,7 +45,7 @@ class Embedding(nn.Module):
     def translate(self, captions):
         sentence = []
         for caption in captions:
-            sentence.append(' '.join([self.int2word[int(v)] for v in caption]))
+            sentence.append(' '.join([self.int2word[int(v)] for v in caption]).replace("x_UNK_", ""))
         return sentence
 
     def __create_embeddings(self, embedding_path, limited):
