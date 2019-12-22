@@ -2,13 +2,16 @@ import random
 import config
 import matplotlib.pyplot as plt
 from data_extractor import get_data
-from models.vgg_rnn import VggRNN
+from models.vgg_rnn import VggRNN, VggLSTM
 from models.inception_rnn import InceptionRNN, InceptionLSTM
 from batch_generator import BatchGenerator
 
 
 models = {"vggrnn": {"model": VggRNN,
                      "params": config.VggRNNParams},
+
+          "vgglstm": {"model": VggLSTM,
+                      "params": config.VggLSTMParams},
 
           "inceptionrnn": {"model": InceptionRNN,
                            "params": config.InceptionRNNParams},

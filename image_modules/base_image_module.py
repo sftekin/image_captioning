@@ -26,11 +26,14 @@ class BaseImageModule(nn.Module):
 
     def _get_feature_dim(self):
         self.model.fc = nn.Sequential().to(self.device)
+        self.model.classifier = nn.Sequential().to(self.device)
         dummy_image = torch.zeros(1, 3, *self.input_size).to(self.device)
         with torch.no_grad():
             out = self.model(dummy_image)
             try:
-                self.feature_dim = out.shape[1]*out.shape[2]*out.shape[3]
+                self.feature_dim = out[0].shape[1]*out.shape[2]*out.shape[3]
+            except IndexError:
+                self.feature_dim = out.shape[1]
             except AttributeError:
                 self.feature_dim = out[0].shape[0] * out[0].shape[1]
 
