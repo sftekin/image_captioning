@@ -18,8 +18,10 @@ class DataParams(Params):
 
         self.image_path = "./dataset/images/"
         self.dataset_path = "./dataset"
+        self.embedding_path = './embedding'
         self.url_path = "./dataset/img_url.csv"
 
+        self.load_embedding = True
         self.num_epochs = 100
         self.batch_size = 100
         self.sequence_length = 16
