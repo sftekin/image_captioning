@@ -22,7 +22,7 @@ class Embedding(nn.Module):
 
         # Init vectors to uniform distribution [-1, 1]
         self.vectors = -2 * torch.rand(self.num_vector, self.vector_dim) + 1
-        self.vectors = Variable(self.vectors).to(device)
+        self.vectors = nn.Parameter(self.vectors).to(device)
 
     def load_pre_trained(self, embedding_path, limited=False):
         vocab_load, vectors_load = self.__create_embeddings(embedding_path, limited)
@@ -45,7 +45,8 @@ class Embedding(nn.Module):
     def translate(self, captions):
         sentence = []
         for caption in captions:
-            sentence.append(' '.join([self.int2word[v] for v in caption]))
+            sentence.append(' '.join([self.int2word[int(v)]
+                                      for v in caption]).replace("x_UNK_", "").replace("x_NULL_", ""))
         return sentence
 
     def __create_embeddings(self, embedding_path, limited):

@@ -5,7 +5,9 @@ import torch.nn as nn
 class MultiStepRNN(nn.Module):
     def __init__(self, **kwargs):
         super(MultiStepRNN, self).__init__()
+        self.device = kwargs["device"]
         self.embedding = kwargs["embedding"]
+        self.encoder = nn.Linear(kwargs["word_length"], kwargs["word_length"]).to(self.device)
         self.input_size = kwargs["word_length"]
 
         self.state = None
@@ -25,9 +27,8 @@ class MultiStepRNN(nn.Module):
 
         words = []
         for l in range(self.sequence_length):
-            self.state = self.state.detach() if not isinstance(self.state, list) else [self.state[0].detach(),
-                                                                                       self.state[1].detach()]
             out, self.state = self.model(embedded_input, self.state)
+            out = self.encoder(out)
             out = nn.Softmax(dim=2)(out)
             embedded_input = self.embedding(out)
             words.append(out.squeeze(dim=0))
@@ -41,17 +42,18 @@ class MultiStepRNN(nn.Module):
         :param features: (b, f)
         :return: (b, l, w)
         """
-        self.__init_states(features)
+        self._init_states(features)
+        batch_size = features.shape[0]
 
-        first_word = self.embedding["x_START_"]
-        embedded_input = self.embedding(first_word)
+        embedded_input = self.embedding["x_START_"].unsqueeze(dim=0).repeat(batch_size, 1).unsqueeze(0)
 
         sentence = []
         for l in range(self.sequence_length):
             out, self.state = self.model(embedded_input, self.state)
-            out = nn.Softmax()(out)
+            out = self.encoder(out)
+            out = nn.Softmax(dim=2)(out)
             embedded_input = self.embedding(out)
-            word = out.max(1)
+            word = torch.argmax(out, dim=2)
             sentence.append(word.squeeze(dim=0))
 
         words = torch.stack(sentence, dim=1)

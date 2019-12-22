@@ -40,7 +40,7 @@ class BatchGenerator(LoadData):
 
         if self.use_transform:
             im_transform = transforms.Compose([
-                transforms.RandomResizedCrop(self.input_size),
+                transforms.Resize(self.input_size),
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
                 transforms.Normalize(mean=[0.485, 0.456, 0.406],
