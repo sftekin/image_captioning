@@ -79,29 +79,10 @@ class Embedding(nn.Module):
                         else:
                             raise Exception('IncompatibleInputs')
 
-            vocab_dict, vectors = self.__append_tokens(vocab_dict, vectors)
-
             dict_file = open(dict_path, 'wb')
             pickle.dump(vocab_dict, dict_file)
             np.save(vector_path, vectors)
 
-        return vocab_dict, vectors
-
-    @staticmethod
-    def __append_tokens(vocab_dict, vectors):
-        num_vector, vector_dim = vectors.shape
-        unk_token = np.random.rand(1, vector_dim)
-        start_token = np.random.rand(1, vector_dim)
-        end_token = np.random.rand(1, vector_dim)
-        while_token = np.random.rand(1, vector_dim)
-        null_token = np.zeros_like(unk_token)
-
-        vectors = np.concatenate((vectors, unk_token,
-                                  start_token, end_token,
-                                  while_token, null_token), axis=0)
-
-        for idx, token in enumerate(['x_UNK_', 'x_START_', 'x_END_', 'xWhile', 'x_NULL_']):
-            vocab_dict[token] = idx + num_vector
         return vocab_dict, vectors
 
     @staticmethod
@@ -134,10 +115,6 @@ if __name__ == '__main__':
     glove_name = 'embedding'
     embed = Embedding('../dataset')
 
+    embed.load_pre_trained('', limited=True)
     print(embed['x_START_'])
-
-    one_hot = torch.FloatTensor(list(range(1004)))
-
-    print(embed(one_hot).shape)
-    print(embed.translate([[1, 2, 3, 4, 5], [22, 31, 141, 454, 123]]))
     # embed.load_pre_trained('', limited=False)
