@@ -3,8 +3,9 @@ import torch.nn as nn
 
 
 class BaseImageModule(nn.Module):
-    def __init__(self, input_size, trainable):
+    def __init__(self, input_size, trainable, device):
         super(BaseImageModule, self).__init__()
+        self.device = device
         self.trainable = trainable
         self.model = None
         self.input_size = input_size

@@ -1,3 +1,5 @@
+import torch
+
 
 class Params:
     def __init__(self):
@@ -11,13 +13,14 @@ class DataParams(Params):
     def __init__(self):
         super(DataParams, self).__init__()
 
-        self.model_name = "inceptionrnn"
+        self.model_name = "inceptionlstm"
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
         self.image_path = "./dataset/images/"
         self.dataset_path = "./dataset"
         self.url_path = "./dataset/img_url.csv"
 
-        self.num_epochs = 10
+        self.num_epochs = 100
         self.batch_size = 100
         self.sequence_length = 16
         self.word_length = 1004
@@ -56,6 +59,21 @@ class InceptionRNNParams(Params):
 
         self.optimizer_type = "ADAM"
         self.optimizer_params = {"lr": 0.001}
+
+        self.criterion_type = "CE"
+        self.criterion_params = {}
+
+
+class InceptionLSTMParams(Params):
+    def __init__(self):
+        super(InceptionLSTMParams, self).__init__()
+        self.pretrained_cnn = True
+        self.trainable_cnn = False
+
+        self.num_layers = 1
+
+        self.optimizer_type = "ADAM"
+        self.optimizer_params = {"lr": 0.01}
 
         self.criterion_type = "CE"
         self.criterion_params = {}

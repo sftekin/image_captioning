@@ -8,7 +8,7 @@ class RNN(MultiStepRNN):
 
         self.model = nn.RNN(input_size=self.embedding.vector_dim,
                             hidden_size=kwargs["hidden_size"],
-                            num_layers=kwargs["num_layers"])
+                            num_layers=kwargs["num_layers"]).to(self.device)
 
     def _init_states(self, features):
         self.state = features.unsqueeze(dim=0)
