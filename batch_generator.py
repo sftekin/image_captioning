@@ -4,7 +4,6 @@ from load_data import LoadData
 from dataset import ImageDataset
 from torchvision import transforms
 from torch.utils.data import DataLoader
-from embedding.embedding import Embedding
 
 
 class BatchGenerator(LoadData):
@@ -12,7 +11,7 @@ class BatchGenerator(LoadData):
     def __init__(self, **kwargs):
         super(BatchGenerator, self).__init__(kwargs["dataset_path"], kwargs["image_path"])
 
-        self.batch_size = kwargs.get('batch_size', 8)
+        self.batch_size = kwargs.get('batch_size', 16)
         self.shuffle = kwargs.get('shuffle', True)
         self.num_works = kwargs.get('num_works', 4)
         self.test_ratio = kwargs.get('test_ratio', 0.1)
@@ -22,8 +21,7 @@ class BatchGenerator(LoadData):
         self.use_transform = kwargs.get('use_transform', True)
         self.input_size = kwargs.get("input_size", (224, 224))
 
-        self.dataset_dict = self.__create_data()[0]
-        self.dataloader_dict = self.__create_data()[1]
+        self.dataset_dict, self.dataloader_dict = self.__create_data()
 
     def generate(self, data_type):
         """
@@ -63,7 +61,8 @@ class BatchGenerator(LoadData):
             im_loader[i] = DataLoader(im_dataset[i],
                                       batch_size=self.batch_size,
                                       shuffle=self.shuffle,
-                                      num_workers=self.num_works)
+                                      num_workers=self.num_works,
+                                      drop_last=True)
 
         return im_dataset, im_loader
 

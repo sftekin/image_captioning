@@ -41,10 +41,8 @@ class Embedding(nn.Module):
         return self.vocab_dict[caption]
 
     def translate(self, captions):
-        sentence = []
-        for caption in captions:
-            sentence.append(' '.join([self.int2word[int(v)]
-                                      for v in caption]).replace("x_UNK_", "").replace("x_NULL_", ""))
+        sentence = ' '.join([self.int2word[int(v)]
+                             for v in captions]).replace("x_UNK_", "").replace("x_NULL_", "")
         return sentence
 
     def __create_embeddings(self, embedding_path, limited):
