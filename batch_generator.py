@@ -4,7 +4,6 @@ from load_data import LoadData
 from dataset import ImageDataset
 from torchvision import transforms
 from torch.utils.data import DataLoader
-from embedding.embedding import Embedding
 
 
 class BatchGenerator(LoadData):

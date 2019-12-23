@@ -42,7 +42,6 @@ def main():
             print("\rTraining: " + str(loss) + " [" + "="*idx, end="", flush=True)
         print("]")
 
-        """
         (im, cap) = next(batch_gen.generate("train"))
         generated_caption = model.caption(im)
         random_idx = random.sample(list(range(parameters["batch_size"])), 5)
@@ -54,7 +53,6 @@ def main():
             plt.tight_layout()
             plt.title(cap)
             plt.show()
-        """
 
 
 if __name__ == '__main__':

@@ -24,7 +24,7 @@ class DataParams(Params):
         self.load_embedding = True
         self.trainable_embed = False
         self.num_epochs = 1000
-        self.batch_size = 100
+        self.batch_size = 64
         self.sequence_length = 16
         self.word_length = 1004
         self.input_size = (380, 380)
