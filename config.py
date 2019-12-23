@@ -22,7 +22,7 @@ class DataParams(Params):
         self.url_path = "./dataset/img_url.csv"
 
         self.load_embedding = True
-        self.train_embed = True
+        self.trainable_embed = True
         self.num_epochs = 1000
         self.batch_size = 100
         self.sequence_length = 16
