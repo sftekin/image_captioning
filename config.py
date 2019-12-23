@@ -13,7 +13,7 @@ class DataParams(Params):
     def __init__(self):
         super(DataParams, self).__init__()
 
-        self.model_name = "inceptionlstm"
+        self.model_name = "inceptionrnn"
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
         self.image_path = "./dataset/images/"
@@ -34,7 +34,8 @@ class DataParams(Params):
         self.validation_length = []
         self.test_length = []
 
-        self.rnn_flow = "parallel"
+        self.rnn_flow = "RNN"
+        self.word_flow = True
 
         self.hidden_size = self.word_length if self.rnn_flow == "RNN" else 64
 

@@ -25,10 +25,11 @@ class BaseModel(nn.Module):
 
         self.criterion = loss_dict[params["criterion_type"]](**params["criterion_params"])
 
-    def forward(self, input_):
+    def forward(self, input_, batch_y=None):
         """
 
         :param input_: (b, d, m, n)
+        :param batch_y: (b, l)
         :return:
         """
         image_features = self.image_process(input_)             # (b, f)
@@ -46,7 +47,7 @@ class BaseModel(nn.Module):
         batch_x = batch_x.to(self.params["device"])
         batch_y = batch_y.to(self.params["device"])
 
-        generated_words = self(batch_x)
+        generated_words = self(batch_x, batch_y)
         self.optimizer.zero_grad()
 
         loss = 0

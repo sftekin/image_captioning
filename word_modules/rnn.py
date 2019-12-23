@@ -19,7 +19,7 @@ class RNN(MultiStepRNN):
 class RNNParallel(MultiStepParallel):
     def __init__(self, **kwargs):
         super(RNNParallel, self).__init__(**kwargs)
-
+        self.hidden_size = kwargs["hidden_size"]
         self.model = nn.RNN(input_size=self.embedding.vector_dim,
                             hidden_size=kwargs["hidden_size"],
                             num_layers=kwargs["num_layers"]).to(self.device)
@@ -30,4 +30,4 @@ class RNNParallel(MultiStepParallel):
 
 
 rnn_models = {"RNN": RNN,
-              "Parallel": RNNParallel}
+              "parallel": RNNParallel}
