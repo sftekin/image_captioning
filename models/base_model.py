@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from losses import loss_dict
 from optimizers import optimizer_dict
-from embedding.create_embedding import Embedding
+from embedding.embedding import Embedding
 
 
 class BaseModel(nn.Module):
@@ -13,7 +13,7 @@ class BaseModel(nn.Module):
 
         self.image_process = None
         self.word_process = None
-        self.embedding = Embedding(params["dataset_path"], device=params["device"])
+        self.embedding = Embedding(params["dataset_path"], params['train_embed'], device=params["device"])
         if params['load_embedding']:
             self.embedding.load_pre_trained(params['embedding_path'], limited=True)
 

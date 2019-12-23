@@ -1,58 +1,121 @@
+import os
+import csv
+import pickle
 import codecs
 import numpy as np
+import torch
+import torch.nn as nn
+
+from torch.autograd import Variable
+
+np.random.seed(42)  # To produce same vectors for appended tokens
 
 
-class Embedding:
+class Embedding(nn.Module):
 
-    def __init__(self, file_name):
-        self.vector_dim = 300
-        self.file_name = file_name
-        self.vocab_dict = dict()
-        self.vectors = []
-        self.__create_embeddings()
+    def __init__(self, dataset_path, train_on, vector_dim=300, device='cpu'):
+        nn.Module.__init__(self)
 
-    def create_word2embed(self, batch_captions):
+        self.word2int, self.int2word = self.__create_dicts(dataset_path)
+        self.num_vector = len(self.word2int)
+        self.vector_dim = vector_dim
+
+        # Init vectors to uniform distribution [-1, 1]
+        self.vectors = -2 * torch.rand(self.num_vector, self.vector_dim) + 1
+        self.vectors = nn.Parameter(self.vectors, requires_grad=train_on).to(device)
+
+    def load_pre_trained(self, embedding_path, limited=False):
+        vocab_load, vectors_load = self.__create_embeddings(embedding_path, limited)
+
+        for idx, word in enumerate(self.word2int.keys()):
+            vec_idx = vocab_load[word]
+            self.vectors[idx, :] = torch.from_numpy(vectors_load[vec_idx])
+            self.vocab_dict[word] = torch.from_numpy(vectors_load[vec_idx])
+
+    def forward(self, one_hot):
+        return torch.matmul(one_hot, self.vectors)
+
+    def __getitem__(self, caption):
         """
-        :param batch_captions: list(batch_size, caption_count, caption_length)
-        :return: numpy or tensor(batch_size, caption_count, self.vector_dim)
+        :param caption: list(caption_length)
+        :return: numpy or tensor(batch_size, caption_count, sentence_length, self.vector_dim)
         """
-        batch_size = len(batch_captions)
-        batch_vectors = [[]] * batch_size
-        for batch_id in range(batch_size):
-            vectors = []
-            for caption in batch_captions[batch_id]:
-                id_list = list(map(lambda x: self.vocab_dict[x], caption))
-                vectors.append(list(map(lambda x: self.vectors[x], id_list)))
-            batch_vectors[batch_id] = vectors
-        return batch_vectors
+        return self.vocab_dict[caption]
 
-    def __create_embeddings(self):
-        with codecs.open(self.file_name, 'r', "UTF-8") as f:
-            content = f.readlines()
-            vocab_size = len(content)
-            words = [""] * vocab_size
-            vectors = np.zeros((vocab_size, self.vector_dim))
-            for idx, line in enumerate(content):
-                vals = line.rstrip().split(' ')
-                words[idx] = vals[0]
-                self.vocab_dict[vals[0]] = idx  # indices start from 0
-                vec = list(map(float, vals[1:]))
-                try:
-                    vectors[idx, :] = vec
-                except IndexError:
-                    if vals[0] == '<unk>':  # ignore the <unk> vector
-                        pass
-                    else:
-                        raise Exception('IncompatibleInputs')
+    def translate(self, captions):
+        sentence = []
+        for caption in captions:
+            sentence.append(' '.join([self.int2word[int(v)]
+                                      for v in caption]).replace("x_UNK_", "").replace("x_NULL_", ""))
+        return sentence
 
-            self.vectors = vectors
+    def __create_embeddings(self, embedding_path, limited):
+        dict_path = os.path.join(embedding_path, 'vocab.dict.pkl')
+        vector_path = os.path.join(embedding_path, 'vector.npy')
+        if os.path.isfile(dict_path) and os.path.isfile(vector_path):
+            dict_file = open(dict_path, 'rb')
+            vocab_dict = pickle.load(dict_file)
+            vectors = np.load(vector_path)
+        else:
+            if limited:
+                embed_txt = os.path.join(embedding_path, 'limited_glove_vectors.txt')
+            else:
+                embed_txt = os.path.join(embedding_path, 'glove_original.txt')
+            vocab_dict = {}
+            with codecs.open(embed_txt, 'r', "UTF-8") as f:
+                content = f.readlines()
+                vocab_size = len(content)
+                words = [""] * vocab_size
+                vectors = np.zeros((vocab_size, self.vector_dim))
+                for idx, line in enumerate(content):
+                    vals = line.rstrip().split(' ')
+                    words[idx] = vals[0]
+                    vocab_dict[vals[0]] = idx  # indices start from 0
+                    vec = list(map(float, vals[1:]))
+                    try:
+                        vectors[idx, :] = vec
+                    except IndexError:
+                        if vals[0] == '<unk>':  # ignore the <unk> vector
+                            pass
+                        else:
+                            raise Exception('IncompatibleInputs')
+
+            dict_file = open(dict_path, 'wb')
+            pickle.dump(vocab_dict, dict_file)
+            np.save(vector_path, vectors)
+
+        return vocab_dict, vectors
+
+    @staticmethod
+    def __create_dicts(dataset_path):
+
+        word2int_csv_path = os.path.join(dataset_path, 'word2int.csv')
+
+        data = []
+        with open(word2int_csv_path, mode='r') as infile:
+            reader = csv.reader(infile)
+            for row in reader:
+                data.append(row)
+
+        word2int = {}
+        for word, value in zip(data[0], data[1]):
+            word2int[word] = int(float(value))
+
+        word2int = {k: v for k, v in sorted(word2int.items(), key=lambda item: item[1])}
+        int2word = {v: k for k, v in word2int.items()}
+        return word2int, int2word
+
+    @property
+    def vocab_dict(self):
+        return {word: self.vectors[i].clone()
+                for i, word in enumerate(self.word2int.keys())}
 
 
 if __name__ == '__main__':
-    glove_name = 'glove_original.txt'
-    embed = Embedding(glove_name)
-    example = [[['a', 'couple', 'sitting', 'on', 'the', 'back', 'of', 'a', 'horse', 'drawn', 'carriage'],
-               ['a', 'horse', 'and', 'carriage', 'ride', 'in', 'an', 'old', 'town']]]
-    vects = embed.create_word2embed(example)
-    print(len(vects), len(vects[0]), len(vects[0][0]))
-    print(np.array(vects[0][0]).shape)
+
+    glove_name = 'embedding'
+    embed = Embedding('../dataset')
+
+    embed.load_pre_trained('', limited=True)
+    print(embed['x_START_'])
+    # embed.load_pre_trained('', limited=False)
