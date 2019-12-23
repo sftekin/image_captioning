@@ -6,8 +6,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from torch.autograd import Variable
-
 np.random.seed(42)  # To produce same vectors for appended tokens
 
 
@@ -114,7 +112,7 @@ class Embedding(nn.Module):
 if __name__ == '__main__':
 
     glove_name = 'embedding'
-    embed = Embedding('../dataset')
+    embed = Embedding('../dataset', train_on=False)
 
     embed.load_pre_trained('', limited=True)
     print(embed['x_START_'])
