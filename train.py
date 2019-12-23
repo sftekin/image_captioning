@@ -1,4 +1,5 @@
 import torch
+import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 import torch.nn as nn
@@ -54,6 +55,10 @@ def train(net, batch_gen, **kwargs):
         print('\n')
         print('Creating sample captions')
         sample(net, batch_gen, top_k=5, **kwargs)
+
+    print('Training finished, saving the model')
+    model_file = open('vgg_lstm.pkl', 'wb')
+    pickle.dump(net, model_file)
 
 
 def evaluate(net, batch_gen, **kwargs):
@@ -160,7 +165,7 @@ if __name__ == '__main__':
     train_params = {
         'n_epoch': 15,
         'clip': 5,
-        'lr': 0.001,
+        'lr': 0.01,
         'seq_len': 16,
         'print_every': 500
     }
