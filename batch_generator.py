@@ -22,8 +22,6 @@ class BatchGenerator(LoadData):
         self.use_transform = kwargs.get('use_transform', True)
         self.input_size = kwargs.get("input_size", (224, 224))
 
-        self.embedding = Embedding(self.embed_path, self.vector_dim)
-
         self.dataset_dict = self.__create_data()[0]
         self.dataloader_dict = self.__create_data()[1]
 
@@ -56,7 +54,6 @@ class BatchGenerator(LoadData):
                 'captions_int': self.captions_int,
                 'captions_word': self.caption_words,
                 'im_addr': self.image_addr,
-                'embedding': self.embedding,
                 'transformer': im_transform
             }
             im_dataset[i] = ImageDataset(params)

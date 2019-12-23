@@ -15,7 +15,6 @@ class ImageDataset(Dataset):
         self.captions_int = params['captions_int']
         self.captions_word = params['captions_word']
         self.im_addr = params['im_addr']
-        self.embedding = params['embedding']
         self.transformer = params['transformer']
 
     def __len__(self):
