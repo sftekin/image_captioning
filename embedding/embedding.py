@@ -46,7 +46,7 @@ class Embedding(nn.Module):
         sentence = []
         for caption in captions:
             sentence.append(' '.join([self.int2word[int(v)]
-                                      for v in caption]).replace("x_UNK_", "").replace("x_NULL_", ""))
+                                      for v in caption]).replace("x_NULL_", ""))
         return sentence
 
     def __create_embeddings(self, embedding_path, limited):

@@ -13,7 +13,7 @@ class DataParams(Params):
     def __init__(self):
         super(DataParams, self).__init__()
 
-        self.model_name = "inceptionrnn"
+        self.model_name = "inceptionlstm"
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
         self.image_path = "./dataset/images/"
@@ -27,7 +27,8 @@ class DataParams(Params):
         self.batch_size = 64
         self.sequence_length = 16
         self.word_length = 1004
-        self.input_size = (380, 380)
+        self.input_size = (360, 360)
+        self.num_layers = 2
         self.min_num_captions = 3
 
         self.train_length = []
@@ -76,10 +77,10 @@ class InceptionRNNParams(Params):
         self.pretrained_cnn = True
         self.trainable_cnn = False
 
-        self.num_layers = 1
+        self.num_layers = 2
 
         self.optimizer_type = "ADAM"
-        self.optimizer_params = {"lr": 0.001}
+        self.optimizer_params = {"lr": 0.01}
 
         self.criterion_type = "CE"
         self.criterion_params = {}
@@ -91,7 +92,7 @@ class InceptionLSTMParams(Params):
         self.pretrained_cnn = True
         self.trainable_cnn = False
 
-        self.num_layers = 1
+        self.num_layers = 2
 
         self.optimizer_type = "SGD"
         self.optimizer_params = {"lr": 0.01}

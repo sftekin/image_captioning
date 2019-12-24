@@ -7,14 +7,14 @@ class Dense1(nn.Module):
         super(Dense1, self).__init__()
 
         self.feature = nn.Sequential(nn.Linear(kwargs["feature_dim"], 512),
-                                     nn.ReLU(),
+                                     nn.Linear(512, 512),
                                      nn.Linear(512, 256)).to(kwargs["device"])
         self.state = nn.Sequential(nn.Linear(kwargs["hidden_size"], 2048),
                                    nn.Linear(2048, 256)).to(kwargs["device"])
 
-        self.merger = nn.Sequential(nn.Linear(512, 1024),
-                                    nn.Sigmoid(),
-                                    nn.Linear(1024, kwargs["word_length"])).to(kwargs["device"])
+        self.merger = nn.Sequential(nn.Linear(512, 256),
+                                    nn.Dropout(0.5),
+                                    nn.Linear(256, kwargs["word_length"])).to(kwargs["device"])
         del kwargs
 
     def forward(self, features, state):

@@ -36,23 +36,25 @@ def main():
     batch_gen = BatchGenerator(**parameters)
 
     for e in range(parameters["num_epochs"]):
-        print("Epoch num: " + str(e))
-        for idx, (im, cap) in enumerate(batch_gen.generate('train')):
-            loss = model.fit(im, cap)
-            print("\rTraining: " + str(loss) + " [" + "="*idx, end="", flush=True)
-        print("]")
-
         (im, cap) = next(batch_gen.generate("train"))
         generated_caption = model.caption(im)
         random_idx = random.sample(list(range(parameters["batch_size"])), 5)
         for idx in random_idx:
             cap = generated_caption[idx]
             img = im[idx]
-            img = (img.permute(1, 2, 0) - img.min())/(img.max() - img.min())
+            img = (img.permute(1, 2, 0) - img.min()) / (img.max() - img.min())
             plt.imshow(img)
             plt.tight_layout()
             plt.title(cap)
             plt.show()
+
+        print("Epoch num: " + str(e))
+        for idx, (im, cap) in enumerate(batch_gen.generate('train')):
+            if idx == 20:
+                break
+            loss = model.fit(im, cap)
+            print("\rTraining: " + str(loss) + " [" + "="*idx, end="", flush=True)
+        print("]")
 
 
 if __name__ == '__main__':
