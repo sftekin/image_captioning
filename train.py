@@ -90,13 +90,13 @@ def evaluate(net, batch_gen, **kwargs):
 def predict(net, image, x_cap, h=None, top_k=None):
     image = image.unsqueeze(dim=0)
 
-    x_cap = torch.tensor([[x_cap]])
+    x_cap = torch.tensor([[x_cap]]).to(device)
 
     h = tuple([each.data for each in h])
     out, h = net(image, x_cap,  h)
     p = F.softmax(out, dim=1).data
 
-    if device == 'gpu':
+    if torch.cuda.is_available():
         p = p.cpu()
 
     p, top_ch = p.topk(top_k)
@@ -109,6 +109,8 @@ def predict(net, image, x_cap, h=None, top_k=None):
 
 
 def show_image(img, captions):
+    if torch.cuda.is_available():
+        img = img.cpu()
     embed = Embedding(dataset_path="./dataset",
                       train_on=False,
                       device=device)
@@ -129,6 +131,7 @@ def sample(net, batch_gen, top_k=None, **kwargs):
     seq_length = kwargs['seq_len']
 
     im, _, y_cap = next(batch_gen.generate('test'))
+    im, y_cap = im.to(device), y_cap.to(device)
     h = net.init_hidden(1)
 
     x_cap = 1  # x_START_
