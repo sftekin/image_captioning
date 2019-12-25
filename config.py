@@ -23,19 +23,19 @@ class DataParams(Params):
 
         self.load_embedding = True
         self.trainable_embed = False
-        self.num_epochs = 1000
+        self.num_epochs = 1
         self.batch_size = 64
         self.sequence_length = 16
         self.word_length = 1004
-        self.input_size = (360, 360)
-        self.num_layers = 2
+        self.input_size = (299, 299)
+        self.num_layers = 3
         self.min_num_captions = 3
 
         self.train_length = []
         self.validation_length = []
         self.test_length = []
 
-        self.rnn_flow = "RNN"
+        self.rnn_flow = "parallel"
         self.word_flow = True
 
         self.hidden_size = self.word_length if self.rnn_flow == "RNN" else 64
@@ -92,7 +92,7 @@ class InceptionLSTMParams(Params):
         self.pretrained_cnn = True
         self.trainable_cnn = False
 
-        self.num_layers = 2
+        self.num_layers = 3
 
         self.optimizer_type = "SGD"
         self.optimizer_params = {"lr": 0.01}

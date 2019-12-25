@@ -35,13 +35,14 @@ def main():
     model = models[parameters["model_name"]]["model"](parameters)
     batch_gen = BatchGenerator(**parameters)
 
+    (ims, caps) = next(batch_gen.generate("train"))
+    generated_captions = model.caption(ims)
+    random_idx = random.sample(list(range(parameters["batch_size"])), 5)
+
     for e in range(parameters["num_epochs"]):
-        (im, cap) = next(batch_gen.generate("train"))
-        generated_caption = model.caption(im)
-        random_idx = random.sample(list(range(parameters["batch_size"])), 5)
         for idx in random_idx:
-            cap = generated_caption[idx]
-            img = im[idx]
+            cap = generated_captions[idx]
+            img = ims[idx]
             img = (img.permute(1, 2, 0) - img.min()) / (img.max() - img.min())
             plt.imshow(img)
             plt.tight_layout()
