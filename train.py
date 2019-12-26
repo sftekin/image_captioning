@@ -36,6 +36,8 @@ def train(net, batch_gen, **kwargs):
             opt.zero_grad()
             output, h = net(im, x_cap, h)
 
+            # weight = torch.ones(1004)
+            # weight[[0, 1, 2, 3]] = 0
             loss = criterion(output, y_cap.view(batch_size * seq_length).long())
             loss.backward()
 
@@ -156,7 +158,7 @@ if __name__ == '__main__':
 
     data_params = {
         'embed_dim': 300,
-        'vocab_dim': 1001
+        'vocab_dim': 1004
     }
 
     model_params = {

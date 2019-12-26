@@ -42,7 +42,7 @@ class CaptionLSTM(nn.Module):
         self.n_hidden = model_params.get('n_hidden', 512)
 
         self.embed_dim = data_params.get('embed_dim', 300)
-        self.vocab_dim = data_params.get('vocab_dim', 1001)
+        self.vocab_dim = data_params.get('vocab_dim', 1004)
 
         self.embed_layer = nn.Embedding(self.vocab_dim + 4, self.embed_dim)
         self.embed_layer.weight.data.uniform_(-1, 1)

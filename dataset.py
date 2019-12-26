@@ -31,6 +31,13 @@ class ImageDataset(Dataset):
 
         train_captions = self.captions_int.iloc[selected_caption_idx].values[1:]
 
+        seq_len = len(train_captions)
+        train_captions = np.delete(train_captions, 3)
+        if len(train_captions) < seq_len:
+            pad_array = np.zeros(seq_len, np.int64)
+            pad_array[:len(train_captions)] = train_captions
+            train_captions = pad_array
+
         # Target captions are one step forward of train captions
         target_captions = np.roll(train_captions, -1)
         target_captions[-1] = 0

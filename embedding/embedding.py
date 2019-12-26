@@ -15,7 +15,7 @@ class Embedding(nn.Module):
         nn.Module.__init__(self)
 
         self.word2int, self.int2word = self.__create_dicts(dataset_path)
-        self.word2int, self.int2word = self.__preprocess_dicts()
+        # self.word2int, self.int2word = self.__preprocess_dicts()
         self.num_vector = len(self.word2int)
         self.vector_dim = vector_dim
 
