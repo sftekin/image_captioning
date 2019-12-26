@@ -69,7 +69,7 @@ class CaptionLSTM(nn.Module):
         :return:
         """
         h, c = self.conv_model(image), hidden[1]
-        h = h.expand(c.shape)
+        h = h.expand(c.shape).contiguous()
 
         embed = self.embed_layer(x_cap)
         r_output, hidden = self.lstm(embed, (h, c))
