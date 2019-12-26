@@ -26,7 +26,7 @@ class DataParams(Params):
         self.num_epochs = 1000
         self.batch_size = 100
         self.sequence_length = 16
-        self.word_length = 1004
+        self.word_length = 1001
         self.input_size = (380, 380)
         self.min_num_captions = 3
 

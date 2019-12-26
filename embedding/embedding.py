@@ -15,6 +15,7 @@ class Embedding(nn.Module):
         nn.Module.__init__(self)
 
         self.word2int, self.int2word = self.__create_dicts(dataset_path)
+        self.word2int, self.int2word = self.__preprocess_dicts()
         self.num_vector = len(self.word2int)
         self.vector_dim = vector_dim
 
@@ -81,6 +82,23 @@ class Embedding(nn.Module):
             np.save(vector_path, vectors)
 
         return vocab_dict, vectors
+
+    def __preprocess_dicts(self):
+        # change indexes of x_START_, x_UNK_, x_NULL_, x_END_
+        vocab_len = len(self.word2int)
+        new_word2int = {}
+        new_int2word = {}
+        for idx, word in enumerate(self.word2int.keys()):
+            if word not in ['x_START_', 'x_UNK_', 'x_NULL_', 'x_END_']:
+                new_word2int[word] = idx - 4
+                new_int2word[idx - 4] = word
+
+        for idx, token in enumerate(['x_END_', 'x_START_', 'x_UNK_', 'x_NULL_']):
+            pos = vocab_len-4 + idx
+            new_int2word[pos] = token
+            new_word2int[token] = pos
+
+        return new_word2int, new_int2word
 
     @staticmethod
     def __create_dicts(dataset_path):

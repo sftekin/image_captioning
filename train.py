@@ -138,6 +138,7 @@ def sample(net, batch_gen, top_k=None, **kwargs):
     captions = []
     for i in range(batch_size):
         caption = []
+        h = net.init_hidden(1)
         for ii in range(seq_length):
             x_cap, h = predict(net, im[i, :], x_cap, h, top_k=top_k)
             caption.append(x_cap)
@@ -155,7 +156,7 @@ if __name__ == '__main__':
 
     data_params = {
         'embed_dim': 300,
-        'vocab_dim': 1004
+        'vocab_dim': 1001
     }
 
     model_params = {

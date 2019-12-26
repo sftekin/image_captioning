@@ -11,7 +11,7 @@ class BatchGenerator(LoadData):
     def __init__(self, **kwargs):
         super(BatchGenerator, self).__init__(kwargs["dataset_path"], kwargs["image_path"])
 
-        self.batch_size = kwargs.get('batch_size', 16)
+        self.batch_size = kwargs.get('batch_size', 8)
         self.shuffle = kwargs.get('shuffle', True)
         self.num_works = kwargs.get('num_works', 4)
         self.test_ratio = kwargs.get('test_ratio', 0.1)
