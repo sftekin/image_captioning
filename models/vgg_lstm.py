@@ -2,8 +2,9 @@ import torch
 import torch.nn as nn
 import torchvision.models as models
 
-
 from torch.autograd import Variable
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 class VGG16(nn.Module):
@@ -59,8 +60,6 @@ class CaptionLSTM(nn.Module):
 
         self.fc = nn.Linear(self.n_hidden, self.vocab_dim)
 
-        self.device = kwargs.get('device', 'cpu')
-
     def forward(self, image, x_cap, hidden):
         """
         :param image:
@@ -68,8 +67,8 @@ class CaptionLSTM(nn.Module):
         :param hidden: tuple((num_layers, b, n_hidden), (num_layers, b, n_hidden))
         :return:
         """
-        h, c = self.conv_model(image), hidden[1]
-        h = h.expand(c.shape).contiguous()
+        h, c = hidden[0], self.conv_model(image)
+        c = c.expand(h.shape).contiguous()
 
         embed = self.embed_layer(x_cap)
         r_output, hidden = self.lstm(embed, (h, c))
@@ -81,8 +80,8 @@ class CaptionLSTM(nn.Module):
         return out, hidden
 
     def init_hidden(self, batch_size):
-        hidden = (Variable(torch.zeros(self.n_layers, batch_size, self.n_hidden)).to(self.device),
-                  Variable(torch.zeros(self.n_layers, batch_size, self.n_hidden)).to(self.device))
+        hidden = (Variable(torch.rand(self.n_layers, batch_size, self.n_hidden)).to(device),
+                  Variable(torch.rand(self.n_layers, batch_size, self.n_hidden)).to(device))
         return hidden
 
 

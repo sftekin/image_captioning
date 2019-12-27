@@ -132,7 +132,7 @@ def sample(net, batch_gen, top_k=None, **kwargs):
     batch_size = batch_gen.batch_size
     seq_length = kwargs['seq_len']
 
-    im, _, y_cap = next(batch_gen.generate('test'))
+    im, _, y_cap = next(batch_gen.generate('train'))
     im, y_cap = im.to(device), y_cap.to(device)
     h = net.init_hidden(1)
 
@@ -178,7 +178,12 @@ if __name__ == '__main__':
 
     batch_creator = BatchGenerator(dataset_path='./dataset',
                                    image_path='./dataset/images/')
-    model = CaptionLSTM(model_params=model_params,
-                        data_params=data_params)
+    # model = CaptionLSTM(model_params=model_params,
+    #                     data_params=data_params)
 
-    train(model, batch_creator, **train_params)
+    # train(model, batch_creator, **train_params)
+    model_file = open('vgg_lstm_pkl_1.pkl', 'rb')
+    model = pickle.load(model_file)
+
+    sample(model, batch_creator, top_k=10, seq_len=16)
+
