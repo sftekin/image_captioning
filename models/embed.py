@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import torch.nn as nn
 
-from transformers.word2vec_transformer import Word2VecTransformer
+from transformers.word2vec import Word2VecTransformer
 
 
 class Embedding(nn.Module):

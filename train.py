@@ -46,7 +46,7 @@ def train(net, batch_gen, **kwargs):
 
             running_loss += loss.item()
 
-            if (idx+1) % kwargs['print_every'] == 0:
+            if (idx+1) % kwargs['eval_every'] == 0:
                 print('\n')
                 val_loss = evaluate(net, batch_gen, **kwargs)
                 print('\n')
@@ -112,9 +112,9 @@ def predict(net, image, x_cap, h=None, top_k=None):
     return word_int, h
 
 
-def sample(model, batch_gen, top_k=None, **kwargs):
-    model.to(device)
-    model.eval()
+def sample(net, batch_gen, top_k=None, **kwargs):
+    net.to(device)
+    net.eval()
 
     batch_size = batch_gen.batch_size
     seq_length = kwargs['seq_len']
@@ -126,25 +126,25 @@ def sample(model, batch_gen, top_k=None, **kwargs):
     captions = []
     for i in range(batch_size):
         caption = []
-        h = model.init_hidden(1)
+        h = net.init_hidden(1)
         for ii in range(seq_length):
-            x_cap, h = predict(model, im[i, :], x_cap, h, top_k=top_k)
+            x_cap, h = predict(net, im[i, :], x_cap, h, top_k=top_k)
             caption.append(x_cap)
         captions.append(caption)
 
     for i in range(batch_size):
-        show_image(im[i], captions[i], model)
+        show_image(im[i], captions[i], net)
     plt.show()
 
-    model.train()
+    net.train()
     return captions
 
 
-def show_image(img, captions, model):
+def show_image(img, captions, net):
     if torch.cuda.is_available():
         img = img.cpu()
 
-    caption_str = translate(captions, model.embed_layer.int2word)
+    caption_str = translate(captions, net.embed_layer.int2word)
     plt.figure()
     img = (img.permute(1, 2, 0) - img.min()) / (img.max() - img.min())
     plt.imshow(img)
@@ -153,7 +153,7 @@ def show_image(img, captions, model):
 
 
 def translate(captions, int2word):
-    caption_str = ' '.join([int2word[cap] for cap in captions])
+    caption_str = ' '.join([int2word[cap] for cap in captions]).replace('x_UNK_', '')
     return caption_str
 
 
@@ -166,11 +166,19 @@ if __name__ == '__main__':
     }
 
     train_params = {
-        'n_epoch': 15,
+        'n_epoch': 100,
         'clip': 5,
         'lr': 0.01,
         'seq_len': 16,
-        'print_every': 500
+        'eval_every': 100
+    }
+
+    batch_params = {
+        'batch_size': 128,
+        'num_works': 0,
+        'shuffle': True,
+        'use_transform': True,
+        "input_size": (224, 224)
     }
 
     print('Loading data...')
@@ -180,11 +188,12 @@ if __name__ == '__main__':
     print('Creating Batch Generator...')
     batch_creator = BatchGenerator(data_dict=data.data_dict,
                                    captions_int=data.captions_int,
-                                   image_addr=data.image_addr)
+                                   image_addr=data.image_addr,
+                                   **batch_params)
 
     print('Creating Models...')
     caption_model = CaptionLSTM(model_params=model_params,
-                        int2word=data.int2word)
+                                int2word=data.int2word)
 
     print('Starting training...')
     train(caption_model, batch_creator, **train_params)

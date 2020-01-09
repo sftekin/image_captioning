@@ -17,7 +17,7 @@ class VGG16(nn.Module):
 
         # init model
         self.model = models.vgg16(pretrained=self.pre_train)
-        self.model = self.__initialize_model()
+        self.__initialize_model()
 
     def forward(self, image):
         return self.model(image)
@@ -62,8 +62,12 @@ class CaptionLSTM(nn.Module):
         :param hidden: tuple((num_layers, b, n_hidden), (num_layers, b, n_hidden))
         :return:
         """
-        h, c = hidden[0], self.conv_model(image)
-        c = c.expand(h.shape).contiguous()
+        image_vec = self.conv_model(image)
+        h, c = image_vec, image_vec
+
+        # expand it for each layer of image
+        h = h.expand(hidden[0].shape).contiguous()
+        c = c.expand(hidden[1].shape).contiguous()
 
         embed = self.embed_layer(x_cap).float()
         r_output, hidden = self.lstm(embed, (h, c))
