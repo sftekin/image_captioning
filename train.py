@@ -9,7 +9,6 @@ import torch.nn.functional as F
 from batch_generator import BatchGenerator
 from models.vgg_lstm import CaptionLSTM
 from load_data import LoadData
-from embedding import Embedding
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 

@@ -3,7 +3,7 @@ import torch.nn as nn
 import torchvision.models as models
 
 from torch.autograd import Variable
-from embedding import Embedding
+from models.embed import Embedding
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
