@@ -16,23 +16,21 @@ class VGG16(nn.Module):
         self.pre_train = model_params.get('pre_train', True)
 
         # init model
-        self.model = models.vgg16(pretrained=self.pre_train)
+        self.vgg = models.vgg16(pretrained=self.pre_train)
+
+        modules = list(self.vgg.children())[:-2]
+        self.vgg = nn.Sequential(*modules)
+
         self.__initialize_model()
 
     def forward(self, image):
-        return self.model(image)
+        return self.vgg(image)
 
     def __initialize_model(self):
         # close the parameters for training
         if self.transfer_learn:
-            for param in self.model.parameters():
+            for param in self.vgg.parameters():
                 param.requires_grad = False
-
-        num_features = self.model.classifier[6].in_features
-
-        # new trainable parameters are added to end of network
-        self.model.classifier[6] = nn.Linear(num_features, self.output_dim)
-        return self.model
 
 
 class CaptionLSTM(nn.Module):
@@ -62,7 +60,10 @@ class CaptionLSTM(nn.Module):
         :param hidden: tuple((num_layers, b, n_hidden), (num_layers, b, n_hidden))
         :return:
         """
+        batch_size = x_cap.shape[0]
+
         image_vec = self.conv_model(image)
+        image_vec = image_vec.view(batch_size, -1, self.n_hidden).mean(dim=1)
         h, c = image_vec, image_vec
 
         # expand it for each layer of image
@@ -82,5 +83,11 @@ class CaptionLSTM(nn.Module):
         hidden = (Variable(torch.rand(self.n_layers, batch_size, self.n_hidden)).to(device),
                   Variable(torch.rand(self.n_layers, batch_size, self.n_hidden)).to(device))
         return hidden
+
+
+if __name__ == '__main__':
+    model = models.vgg16(pretrained=True)
+    print(list(model.children()))
+    print(list(model.children())[:-2])
 
 
