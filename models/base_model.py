@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from losses import loss_dict
 from optimizers import optimizer_dict
-from embedding.embedding import Embedding
+from embedding import Embedding
 
 
 class BaseModel(nn.Module):

@@ -3,6 +3,7 @@ import torch.nn as nn
 import torchvision.models as models
 
 from torch.autograd import Variable
+from embedding import Embedding
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -22,7 +23,6 @@ class VGG16(nn.Module):
         return self.model(image)
 
     def __initialize_model(self):
-
         # close the parameters for training
         if self.transfer_learn:
             for param in self.model.parameters():
@@ -36,28 +36,23 @@ class VGG16(nn.Module):
 
 
 class CaptionLSTM(nn.Module):
-    def __init__(self, model_params, data_params, **kwargs):
+    def __init__(self, model_params, int2word):
         super(CaptionLSTM, self).__init__()
         self.drop_prob = model_params.get('drop_prob', 0.3)
         self.n_layers = model_params.get('n_layers', 2)
         self.n_hidden = model_params.get('n_hidden', 512)
 
-        self.embed_dim = data_params.get('embed_dim', 300)
-        self.vocab_dim = data_params.get('vocab_dim', 1004)
-
-        self.embed_layer = nn.Embedding(self.vocab_dim + 4, self.embed_dim)
-        self.embed_layer.weight.data.uniform_(-1, 1)
+        self.embed_layer = Embedding(int2word)
+        self.embed_dim = self.embed_layer.embed_dim
+        self.vocab_dim = self.embed_layer.vocab_size
 
         self.conv_model = VGG16(model_params)
-
         self.lstm = nn.LSTM(input_size=self.embed_dim,
                             hidden_size=self.n_hidden,
                             num_layers=self.n_layers,
                             dropout=self.drop_prob,
                             batch_first=True)
-
         self.drop_out = nn.Dropout(self.drop_prob)
-
         self.fc = nn.Linear(self.n_hidden, self.vocab_dim)
 
     def forward(self, image, x_cap, hidden):
@@ -70,7 +65,7 @@ class CaptionLSTM(nn.Module):
         h, c = hidden[0], self.conv_model(image)
         c = c.expand(h.shape).contiguous()
 
-        embed = self.embed_layer(x_cap)
+        embed = self.embed_layer(x_cap).float()
         r_output, hidden = self.lstm(embed, (h, c))
 
         out = self.drop_out(r_output)

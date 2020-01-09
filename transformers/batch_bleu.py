@@ -1,5 +1,5 @@
 import numpy as np
-from embedding.bleu import compute_bleu
+from transformers.bleu import compute_bleu
 
 
 def batch_bleu(reference_batch, translation_batch, cumulative_bleu=False):

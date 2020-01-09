@@ -6,7 +6,7 @@ import torch.nn.functional as F
 
 
 from batch_generator import BatchGenerator
-from embedding.embedding import Embedding
+from embedding import Embedding
 
 
 def show_image(img, captions):

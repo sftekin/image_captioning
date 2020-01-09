@@ -8,14 +8,11 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 
 class ImageDataset(Dataset):
-
-    def __init__(self, params):
-
-        self.image_path_names = params['image_path_names']
-        self.captions_int = params['captions_int']
-        self.captions_word = params['captions_word']
-        self.im_addr = params['im_addr']
-        self.transformer = params['transformer']
+    def __init__(self, image_path_names, captions_int, im_addr, transformer):
+        self.image_path_names = image_path_names
+        self.captions_int = captions_int
+        self.im_addr = im_addr
+        self.transformer = transformer
 
     def __len__(self):
         return len(self.image_path_names)
