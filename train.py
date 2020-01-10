@@ -58,11 +58,11 @@ def train(net, batch_gen, **kwargs):
         print('Creating sample captions')
         sample(net, batch_gen, top_k=5, **kwargs)
         model_file = open('vgg_lstm.pkl', 'wb')
-        pickle.dump(net.to('cpu'), model_file)
+        pickle.dump(net, model_file)
 
     print('Training finished, saving the model')
     model_file = open('vgg_lstm.pkl', 'wb')
-    pickle.dump(net.to('cpu'), model_file)
+    pickle.dump(net, model_file)
 
 
 def evaluate(net, batch_gen, **kwargs):
@@ -175,7 +175,7 @@ if __name__ == '__main__':
     }
 
     batch_params = {
-        'batch_size': 128,
+        'batch_size': 256,
         'num_works': 0,
         'shuffle': True,
         'use_transform': True,
