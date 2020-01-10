@@ -16,11 +16,13 @@ class LoadData:
 
         self.test_ratio = data_params.get('test_ratio', 0.1)
         self.val_ratio = data_params.get('val_ratio', 0.1)
+        self.shuffle = data_params.get('shuffle', True)
         self.data_dict = self.__split_data()
 
     def __split_data(self):
         dataset_length = len(self.image_paths)
-        random.shuffle(self.image_paths)
+        if self.shuffle:
+            random.shuffle(self.image_paths)
 
         test_count = int(dataset_length * self.test_ratio)
         val_count = int(dataset_length * self.val_ratio)

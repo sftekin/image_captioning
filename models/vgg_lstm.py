@@ -64,9 +64,10 @@ class CaptionLSTM(nn.Module):
 
         image_vec = self.conv_model(image)
         image_vec = image_vec.view(batch_size, -1, self.n_hidden).mean(dim=1)
-        h, c = hidden[0], image_vec
+        h, c = image_vec, image_vec
 
         # expand it for each layer of image
+        h = h.expand(hidden[0].shape).contiguous()
         c = c.expand(hidden[1].shape).contiguous()
 
         embed = self.embed_layer(x_cap).float()
