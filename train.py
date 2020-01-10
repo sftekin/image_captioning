@@ -188,7 +188,7 @@ if __name__ == '__main__':
     }
 
     batch_params = {
-        'batch_size': 16,
+        'batch_size': 256,
         'num_works': 0,
         'shuffle': True,
         'use_transform': True,
