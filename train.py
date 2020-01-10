@@ -147,11 +147,11 @@ def show_image(img, captions, net):
 
     caption_str = translate(captions, net.embed_layer.int2word)
     print(caption_str)
-    # plt.figure()
-    # img = (img.permute(1, 2, 0) - img.min()) / (img.max() - img.min())
-    # plt.imshow(img)
-    # plt.tight_layout()
-    # plt.title(caption_str)
+    plt.figure()
+    img = (img.permute(1, 2, 0) - img.min()) / (img.max() - img.min())
+    plt.imshow(img)
+    plt.tight_layout()
+    plt.title(caption_str)
 
 
 def translate(captions, int2word):
@@ -166,7 +166,7 @@ def calc_class_weights(captions_int):
     # calculating idf
     word_count = len(captions_int.flatten())
     counts_array = np.log(word_count / counts_array)
-    counts_tensor = torch.from_numpy(counts_array).float()
+    counts_tensor = torch.from_numpy(counts_array).float().to(device)
 
     return counts_tensor
 
@@ -188,7 +188,7 @@ if __name__ == '__main__':
     }
 
     batch_params = {
-        'batch_size': 256,
+        'batch_size': 16,
         'num_works': 0,
         'shuffle': True,
         'use_transform': True,
@@ -211,9 +211,9 @@ if __name__ == '__main__':
 
     print('Starting training...')
     class_weights = calc_class_weights(data.captions_int.values)
-    train(caption_model, batch_creator, class_weights, **train_params)
-    # model_file = open('vgg_lstm.pkl', 'rb')
-    # model = pickle.load(model_file)
-    #
-    # sample(model, batch_creator, top_k=10, seq_len=16)
+    # train(caption_model, batch_creator, class_weights, **train_params)
+    model_file = open('vgg_lstm.pkl', 'rb')
+    model = pickle.load(model_file)
+
+    sample(model, batch_creator, top_k=10, seq_len=16)
 
