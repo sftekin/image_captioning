@@ -145,11 +145,12 @@ def show_image(img, captions, net):
         img = img.cpu()
 
     caption_str = translate(captions, net.embed_layer.int2word)
-    plt.figure()
-    img = (img.permute(1, 2, 0) - img.min()) / (img.max() - img.min())
-    plt.imshow(img)
-    plt.tight_layout()
-    plt.title(caption_str)
+    print(caption_str)
+    # plt.figure()
+    # img = (img.permute(1, 2, 0) - img.min()) / (img.max() - img.min())
+    # plt.imshow(img)
+    # plt.tight_layout()
+    # plt.title(caption_str)
 
 
 def translate(captions, int2word):
