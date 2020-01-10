@@ -38,7 +38,7 @@ def train(net, batch_gen, **kwargs):
 
             # weight = torch.ones(1004)
             # weight[[0, 1, 2, 3]] = 0
-            loss = criterion(output, x_cap.view(batch_size * seq_length).long())
+            loss = criterion(output, y_cap.view(batch_size * seq_length).long())
             loss.backward()
 
             nn.utils.clip_grad_norm_(net.parameters(), kwargs['clip'])
