@@ -169,13 +169,13 @@ if __name__ == '__main__':
     train_params = {
         'n_epoch': 100,
         'clip': 5,
-        'lr': 0.01,
+        'lr': 0.001,
         'seq_len': 16,
         'eval_every': 100
     }
 
     batch_params = {
-        'batch_size': 16,
+        'batch_size': 128,
         'num_works': 0,
         'shuffle': True,
         'use_transform': True,
