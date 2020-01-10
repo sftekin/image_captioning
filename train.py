@@ -1,5 +1,6 @@
 import torch
 import pickle
+import collections
 import matplotlib.pyplot as plt
 import numpy as np
 import torch.nn as nn
@@ -13,7 +14,7 @@ from load_data import LoadData
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
-def train(net, batch_gen, **kwargs):
+def train(net, batch_gen, weights, **kwargs):
     net.train()
     net.to(device)
 
@@ -21,7 +22,7 @@ def train(net, batch_gen, **kwargs):
     seq_length = kwargs['seq_len']
 
     opt = optim.Adam(net.parameters(), lr=kwargs['lr'])
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.CrossEntropyLoss(weight=weights)
 
     for epoch in range(kwargs['n_epoch']):
         running_loss = 0
@@ -158,6 +159,18 @@ def translate(captions, int2word):
     return caption_str
 
 
+def calc_class_weights(captions_int):
+    counts = collections.Counter(captions_int.flatten())
+    counts_array = np.array(list(counts.values()))
+
+    # calculating idf
+    word_count = len(captions_int.flatten())
+    counts_array = np.log(word_count / counts_array)
+    counts_tensor = torch.from_numpy(counts_array).float()
+
+    return counts_tensor
+
+
 if __name__ == '__main__':
     model_params = {
         'drop_prob': 0.3,
@@ -175,7 +188,7 @@ if __name__ == '__main__':
     }
 
     batch_params = {
-        'batch_size': 256,
+        'batch_size': 16,
         'num_works': 0,
         'shuffle': True,
         'use_transform': True,
@@ -197,7 +210,8 @@ if __name__ == '__main__':
                                 int2word=data.int2word)
 
     print('Starting training...')
-    train(caption_model, batch_creator, **train_params)
+    class_weights = calc_class_weights(data.captions_int.values)
+    train(caption_model, batch_creator, class_weights, **train_params)
     # model_file = open('vgg_lstm.pkl', 'rb')
     # model = pickle.load(model_file)
     #
