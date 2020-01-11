@@ -9,7 +9,7 @@ model_params = {
     }
 
 train_params = {
-    'n_epoch': 100,
+    'n_epoch': 50,
     'clip': 5,
     'lr': 0.008,
     'seq_len': 17,
@@ -18,7 +18,7 @@ train_params = {
 }
 
 batch_params = {
-    'batch_size': 16,
+    'batch_size': 128,
     'num_works': 0,
     'shuffle': True,
     'use_transform': True,
