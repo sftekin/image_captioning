@@ -39,10 +39,12 @@ class BatchGenerator:
 
         im_dataset = {}
         for i in ['test', 'train', 'validation']:
+            return_all = True if i == 'test' else False
             im_dataset[i] = ImageDataset(image_path_names=self.data_dict[i],
                                          captions_int=self.captions_int,
                                          im_addr=self.image_addr,
-                                         transformer=im_transform)
+                                         transformer=im_transform,
+                                         return_all=return_all)
 
         im_loader = {}
         for i in ['test', 'train', 'validation']:
