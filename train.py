@@ -42,14 +42,16 @@ def train(net, batch_gen, weights, **kwargs):
             running_loss += loss.item()
 
             if (idx+1) % kwargs['eval_every'] == 0:
+                print('\n')
                 val_loss = evaluate(net, batch_gen, weights, **kwargs)
-                print("Epoch: {}/{}...".format(epoch + 1, kwargs['n_epoch']),
+                print("\nEpoch: {}/{}...".format(epoch + 1, kwargs['n_epoch']),
                       "Step: {}...".format(idx),
                       "Loss: {:.4f}...".format(running_loss / idx),
                       "Val Loss: {:.4f}".format(val_loss))
 
         print('Creating sample captions')
         sample(net, batch_gen, top_k=5, **kwargs)
+        print('\n')
 
         train_loss_list.append(running_loss / idx)
         val_loss_list.append(val_loss)

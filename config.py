@@ -13,7 +13,7 @@ train_params = {
     'clip': 5,
     'lr': 0.008,
     'seq_len': 17,
-    'eval_every': 100,
+    'eval_every': 200,
     'show_image': False
 }
 

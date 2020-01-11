@@ -40,6 +40,7 @@ def sample(net, batch_gen, top_k=None, **kwargs):
     x_cap = 1  # x_START_
     captions = []
     for i in range(batch_size):
+        print('\rsample:{}'.format(i), flush=True, end='')
         caption = []
         h = None
         for ii in range(seq_length):
@@ -47,11 +48,12 @@ def sample(net, batch_gen, top_k=None, **kwargs):
             caption.append(x_cap)
         captions.append(caption)
 
+    print('\n')
     for i in range(batch_size):
         caption_str = translate(captions[i], net.embed_layer.int2word)
         print('Caption {}: {}'.format(str(i), caption_str))
         if kwargs['show_image']:
-            show_image(im[i], captions[i], net)
+            show_image(im[i], caption_str)
     plt.show()
 
     net.train()

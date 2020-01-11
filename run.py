@@ -31,19 +31,20 @@ def main(mode):
         train(caption_model, batch_creator, class_weights, **train_params)
 
     elif mode == 'sample':
-        print('Loading model')
+        print('Loading model...')
         model_file = open('vgg_lstm.pkl', 'rb')
         model = pickle.load(model_file)
+        print('Creating sample..')
         sample(model, batch_creator, top_k=10, seq_len=16, show_image=True)
 
     elif mode == 'test':
         print('Loading model')
         model_file = open('vgg_lstm.pkl', 'rb')
         model = pickle.load(model_file)
-
+        print('Testing model...')
         test(model, batch_creator, top_k=10, seq_len=16)
 
 
 if __name__ == '__main__':
-    run_mode = 'train'
+    run_mode = 'test'
     main(run_mode)

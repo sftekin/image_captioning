@@ -32,9 +32,12 @@ def test(net, batch_gen, top_k, **kwargs):
             translate_caps.append(caption)
 
         for i in range(batch_size):
-            y_trimed = trim_empty_rows(y_cap[i])
+            y_trimed = trim_empty_rows(y_cap[i].numpy())
             y_str = [translate(y_trimed[ii], net.embed_layer.int2word) for ii in range(y_trimed.shape[0])]
             referance_caps.append(y_str)
+
+        bleu, geo_mean, bp = compute_bleu(translate_caps, referance_caps)
+        print('BLEU: {}, Geometric_mean: {}, BP:{}'.format(bleu, geo_mean, bp))
 
     bleu, geo_mean, bp = compute_bleu(translate_caps, referance_caps)
     print('BLEU: {}, Geometric_mean: {}, BP:{}'.format(bleu, geo_mean, bp))
