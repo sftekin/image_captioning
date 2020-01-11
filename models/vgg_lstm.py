@@ -2,8 +2,8 @@ import torch
 import torch.nn as nn
 import torchvision.models as models
 
-from torch.autograd import Variable
 from models.embed import Embedding
+from attention import Attention
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -38,56 +38,64 @@ class CaptionLSTM(nn.Module):
         super(CaptionLSTM, self).__init__()
         self.drop_prob = model_params.get('drop_prob', 0.3)
         self.n_layers = model_params.get('n_layers', 2)
-        self.n_hidden = model_params.get('n_hidden', 512)
+        self.lstm_dim = model_params.get('lstm_dim', 512)
+        self.conv_dim = model_params.get('conv_dim', 512)
+        self.att_dim = model_params.get('att_dim', 512)
 
         self.embed_layer = Embedding(int2word)
         self.embed_dim = self.embed_layer.embed_dim
         self.vocab_dim = self.embed_layer.vocab_size
 
         self.conv_model = VGG16(model_params)
-        self.lstm = nn.LSTM(input_size=self.embed_dim,
-                            hidden_size=self.n_hidden,
+        self.attention = Attention(self.conv_dim, self.lstm_dim, self.att_dim)
+        self.lstm = nn.LSTM(input_size=self.embed_dim + self.lstm_dim,
+                            hidden_size=self.lstm_dim,
                             num_layers=self.n_layers,
                             dropout=self.drop_prob,
                             batch_first=True)
         self.drop_out = nn.Dropout(self.drop_prob)
-        self.fc = nn.Linear(self.n_hidden, self.vocab_dim)
+        self.fc = nn.Linear(self.lstm_dim, self.vocab_dim)
 
-    def forward(self, image, x_cap, hidden):
+        self.lin_h = nn.Linear(self.conv_dim, self.lstm_dim)
+        self.lin_c = nn.Linear(self.conv_dim, self.lstm_dim)
+
+    def forward(self, image, x_cap, sentence_len=16, hidden=None):
         """
         :param image:
         :param x_cap: b, seq_len
+        :param sentence_len: int
         :param hidden: tuple((num_layers, b, n_hidden), (num_layers, b, n_hidden))
         :return:
         """
         batch_size = x_cap.shape[0]
 
         image_vec = self.conv_model(image)
-        image_vec = image_vec.view(batch_size, -1, self.n_hidden).mean(dim=1)
-        h, c = image_vec, image_vec
+        image_vec = image_vec.view(batch_size, -1, self.conv_dim)
 
-        # expand it for each layer of image
-        h = h.expand(hidden[0].shape).contiguous()
-        c = c.expand(hidden[1].shape).contiguous()
+        if hidden is None:
+            h, c = self.init_hidden(image_vec)
+            # expand it for each layer of image
+            h = h.expand((self.n_layers, batch_size, self.lstm_dim)).contiguous()
+            c = c.expand((self.n_layers, batch_size, self.lstm_dim)).contiguous()
+        else:
+            h, c = hidden
 
-        embed = self.embed_layer(x_cap).float()
-        r_output, hidden = self.lstm(embed, (h, c))
+        sentence = []
+        for word_idx in range(sentence_len):
+            weigted_conv_output = self.attention(image_vec, h[0, :])
+            embed = self.embed_layer(x_cap[:, word_idx]).float()
+            lstm_in = torch.cat([embed, weigted_conv_output], dim=1).unsqueeze(1)
+            r_out, (h, c) = self.lstm(lstm_in, (h, c))
 
-        out = self.drop_out(r_output)
-        out = out.contiguous().view(-1, self.n_hidden)
-        out = self.fc(out)
+            out = self.fc(self.drop_out(r_out))
+            sentence.append(out)
 
-        return out, hidden
+        output = torch.cat(sentence, dim=1)
+        output = output.contiguous().view(-1, self.vocab_dim)
+        return output, (h, c)
 
-    def init_hidden(self, batch_size):
-        hidden = (Variable(torch.rand(self.n_layers, batch_size, self.n_hidden)).to(device),
-                  Variable(torch.rand(self.n_layers, batch_size, self.n_hidden)).to(device))
-        return hidden
-
-
-if __name__ == '__main__':
-    model = models.vgg16(pretrained=True)
-    print(list(model.children()))
-    print(list(model.children())[:-2])
-
-
+    def init_hidden(self, image_vec):
+        image_vec = image_vec.mean(dim=1)
+        h = self.lin_h(image_vec)
+        c = self.lin_c(image_vec)
+        return h, c

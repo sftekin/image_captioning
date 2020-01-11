@@ -26,19 +26,15 @@ def train(net, batch_gen, weights, **kwargs):
 
     for epoch in range(kwargs['n_epoch']):
         running_loss = 0
-        h = net.init_hidden(batch_size)
         for idx, (im, x_cap, y_cap) in enumerate(batch_gen.generate('train')):
 
             print('\rtrain:{}'.format(idx), flush=True, end='')
 
             im, x_cap, y_cap = im.to(device), x_cap.to(device), y_cap.to(device)
-            h = tuple([each.data for each in h])
 
             opt.zero_grad()
-            output, h = net(im, x_cap, h)
+            output, _ = net(im, x_cap)
 
-            # weight = torch.ones(1004)
-            # weight[[0, 1, 2, 3]] = 0
             loss = criterion(output, y_cap.view(batch_size * seq_length).long())
             loss.backward()
 
@@ -74,16 +70,14 @@ def evaluate(net, batch_gen, **kwargs):
 
     criterion = nn.CrossEntropyLoss()
 
-    val_h = net.init_hidden(batch_size)
     val_losses = []
     for idx, (im, x_cap, y_cap) in enumerate(batch_gen.generate('validation')):
 
         print('\rval:{}'.format(idx), flush=True, end='')
 
         im, x_cap, y_cap = im.to(device), x_cap.to(device), y_cap.to(device)
-        val_h = tuple([each.data for each in val_h])
 
-        output, val_h = net(im, x_cap, val_h)
+        output, _ = net(im, x_cap)
         val_loss = criterion(output, y_cap.view(batch_size * seq_length))
 
         val_losses.append(val_loss.item())
@@ -97,8 +91,7 @@ def predict(net, image, x_cap, h=None, top_k=None):
 
     x_cap = torch.tensor([[x_cap]]).to(device)
 
-    # h = tuple([each.data for each in h])
-    out, h = net(image, x_cap,  h)
+    out, h = net(image, x_cap, sentence_len=1, hidden=h)
     p = F.softmax(out, dim=1).data
 
     if torch.cuda.is_available():
@@ -127,7 +120,7 @@ def sample(net, batch_gen, top_k=None, **kwargs):
     captions = []
     for i in range(batch_size):
         caption = []
-        h = net.init_hidden(1)
+        h = None
         for ii in range(seq_length):
             x_cap, h = predict(net, im[i, :], x_cap, h, top_k=top_k)
             caption.append(x_cap)
@@ -147,11 +140,11 @@ def show_image(img, captions, net):
 
     caption_str = translate(captions, net.embed_layer.int2word)
     print(caption_str)
-    plt.figure()
-    img = (img.permute(1, 2, 0) - img.min()) / (img.max() - img.min())
-    plt.imshow(img)
-    plt.tight_layout()
-    plt.title(caption_str)
+    # plt.figure()
+    # img = (img.permute(1, 2, 0) - img.min()) / (img.max() - img.min())
+    # plt.imshow(img)
+    # plt.tight_layout()
+    # plt.title(caption_str)
 
 
 def translate(captions, int2word):
@@ -211,9 +204,9 @@ if __name__ == '__main__':
 
     print('Starting training...')
     class_weights = calc_class_weights(data.captions_int.values)
-    # train(caption_model, batch_creator, class_weights, **train_params)
-    model_file = open('vgg_lstm.pkl', 'rb')
-    model = pickle.load(model_file)
-
-    sample(model, batch_creator, top_k=10, seq_len=16)
+    train(caption_model, batch_creator, class_weights, **train_params)
+    # model_file = open('vgg_lstm.pkl', 'rb')
+    # model = pickle.load(model_file)
+    #
+    # sample(model, batch_creator, top_k=10, seq_len=16)
 
