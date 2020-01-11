@@ -3,7 +3,7 @@ import torch.nn as nn
 import torchvision.models as models
 
 from models.embed import Embedding
-from attention import Attention
+from models.attention import Attention
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
