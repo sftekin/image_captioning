@@ -18,7 +18,7 @@ train_params = {
 }
 
 batch_params = {
-    'batch_size': 200,
+    'batch_size': 16,
     'num_works': 0,
     'shuffle': True,
     'use_transform': True,

@@ -9,6 +9,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def test(net, batch_gen, top_k, **kwargs):
     net.eval()
+    net.to(device)
 
     batch_size = batch_gen.batch_size
     seq_length = kwargs['seq_len']
@@ -36,9 +37,14 @@ def test(net, batch_gen, top_k, **kwargs):
             y_str = [translate(y_trimed[ii], net.embed_layer.int2word).split() for ii in range(y_trimed.shape[0])]
             referance_caps.append(y_str)
 
+        print('\n')
+        for i in range(1, 5):
+            bleu, geo_mean, bp = compute_bleu(referance_caps, translate_caps, max_order=i)
+            print('BLEU: {}, Geometric_mean: {}, BP:{}'.format(bleu, geo_mean, bp))
+
     print('\n')
     for i in range(1, 5):
-        bleu, geo_mean, bp = compute_bleu(translate_caps, referance_caps, max_order=i)
+        bleu, geo_mean, bp = compute_bleu(referance_caps, translate_caps, max_order=i)
         print('BLEU: {}, Geometric_mean: {}, BP:{}'.format(bleu, geo_mean, bp))
 
 
