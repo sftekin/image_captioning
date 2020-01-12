@@ -33,7 +33,7 @@ def test(net, batch_gen, top_k, **kwargs):
             translate_caps.append(caption.split())
 
         for i in range(batch_size):
-            y_trimed = trim_empty_rows(y_cap[i].numpy())
+            y_trimed = trim_empty_rows(y_cap[i].cpu().numpy())
             y_str = [translate(y_trimed[ii], net.embed_layer.int2word).split() for ii in range(y_trimed.shape[0])]
             referance_caps.append(y_str)
 
