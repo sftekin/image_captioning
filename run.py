@@ -46,5 +46,5 @@ def main(mode):
 
 
 if __name__ == '__main__':
-    run_mode = 'train'
+    run_mode = 'test'
     main(run_mode)

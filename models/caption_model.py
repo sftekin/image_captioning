@@ -74,3 +74,7 @@ class CaptionLSTM(nn.Module):
         h = self.lin_h(image_vec)
         c = self.lin_c(image_vec)
         return h, c
+
+    def fine_tune(self):
+        self.conv_model.fine_tune()
+

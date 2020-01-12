@@ -11,14 +11,14 @@ model_params = {
 train_params = {
     'n_epoch': 50,
     'clip': 5,
-    'lr': 0.008,
+    'lr': 0.003,
     'seq_len': 17,
-    'eval_every': 200,
+    'eval_every': 100,
     'show_image': False
 }
 
 batch_params = {
-    'batch_size': 128,
+    'batch_size': 200,
     'num_works': 0,
     'shuffle': True,
     'use_transform': True,

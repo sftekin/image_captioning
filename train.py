@@ -49,6 +49,10 @@ def train(net, batch_gen, weights, **kwargs):
                       "Loss: {:.4f}...".format(running_loss / idx),
                       "Val Loss: {:.4f}".format(val_loss))
 
+        # After 15 epochs open last parts of conv model
+        if epoch > 15:
+            net.fine_tune()
+
         print('Creating sample captions')
         sample(net, batch_gen, top_k=5, **kwargs)
         print('\n')
