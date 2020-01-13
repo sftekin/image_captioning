@@ -1,28 +1,21 @@
-import random
-
-from load_data import LoadData
 from dataset import ImageDataset
 from torchvision import transforms
 from torch.utils.data import DataLoader
 
 
-class BatchGenerator(LoadData):
+class BatchGenerator:
+    def __init__(self, data_dict, captions_int, image_addr, **kwargs):
+        self.data_dict = data_dict
+        self.captions_int = captions_int
+        self.image_addr = image_addr
 
-    def __init__(self, **kwargs):
-        super(BatchGenerator, self).__init__(kwargs["dataset_path"], kwargs["image_path"])
-
-        self.batch_size = kwargs.get('batch_size', 8)
-        self.shuffle = kwargs.get('shuffle', True)
+        self.batch_size = kwargs.get('batch_size', 16)
         self.num_works = kwargs.get('num_works', 4)
-        self.test_ratio = kwargs.get('test_ratio', 0.1)
-        self.val_ratio = kwargs.get('val_ratio', 0.1)
-        self.embed_path = kwargs.get('embedding_path', 'embedding')
-        self.vector_dim = kwargs.get('vector_dim', 300)
+        self.shuffle = kwargs.get('shuffle', True)
         self.use_transform = kwargs.get('use_transform', True)
         self.input_size = kwargs.get("input_size", (224, 224))
 
-        self.dataset_dict = self.__create_data()[0]
-        self.dataloader_dict = self.__create_data()[1]
+        self.dataset_dict, self.dataloader_dict = self.__create_data()
 
     def generate(self, data_type):
         """
@@ -33,8 +26,6 @@ class BatchGenerator(LoadData):
         yield from selected_loader
 
     def __create_data(self):
-        data_dict = self.__split_data()
-
         if self.use_transform:
             im_transform = transforms.Compose([
                 transforms.Resize(self.input_size),
@@ -48,35 +39,18 @@ class BatchGenerator(LoadData):
 
         im_dataset = {}
         for i in ['test', 'train', 'validation']:
-            params = {
-                'image_path_names': data_dict[i],
-                'captions_int': self.captions_int,
-                'captions_word': self.caption_words,
-                'im_addr': self.image_addr,
-                'transformer': im_transform
-            }
-            im_dataset[i] = ImageDataset(params)
+            return_all = True if i == 'test' else False
+            im_dataset[i] = ImageDataset(image_path_names=self.data_dict[i],
+                                         captions_int=self.captions_int,
+                                         im_addr=self.image_addr,
+                                         transformer=im_transform,
+                                         return_all=return_all)
 
         im_loader = {}
         for i in ['test', 'train', 'validation']:
             im_loader[i] = DataLoader(im_dataset[i],
                                       batch_size=self.batch_size,
                                       shuffle=self.shuffle,
-                                      num_workers=self.num_works)
-
+                                      num_workers=self.num_works,
+                                      drop_last=True)
         return im_dataset, im_loader
-
-    def __split_data(self):
-        dataset_length = len(self.image_paths)
-
-        random.shuffle(self.image_paths)
-
-        test_count = int(dataset_length * self.test_ratio)
-        val_count = int(dataset_length * self.val_ratio)
-
-        data_dict = dict()
-        data_dict['test'] = self.image_paths[:test_count]
-        data_dict['validation'] = self.image_paths[test_count:test_count + val_count]
-        data_dict['train'] = self.image_paths[test_count + val_count:]
-
-        return data_dict
