@@ -78,11 +78,11 @@ Thus network tries to predict next word from previous word given for training.
 
 Here is feature extraction model. 'x_i' represents VGG16 output
 
-![WhatsApp Image 2020-01-12 at 16.24.10](/Users/selimfurkantekin/Downloads/WhatsApp Image 2020-01-12 at 16.24.10.jpeg)
+![](images/cnn.jpeg)
 
 Here is captioning architecture
 
-![WhatsApp Image 2020-01-12 at 16.42.36](/Users/selimfurkantekin/Downloads/WhatsApp Image 2020-01-12 at 16.42.36.jpeg)
+![](images/caption.jpeg)
 
 ## Running
 
@@ -95,9 +95,9 @@ $ python run.py train
 
 Our favorite wrong caption :)
 
-![WhatsApp Image 2020-01-12 at 17.19.41](/Users/selimfurkantekin/Dropbox/WhatsApp Image 2020-01-12 at 17.19.41.jpeg)
+![](images/hamster.jpeg)
 
 Interestingly one of the actual captions below includes a caption related with soccer
 
-![WhatsApp Image 2020-01-12 at 11.20.30](/Users/selimfurkantekin/Downloads/WhatsApp Image 2020-01-12 at 11.20.30.jpeg)
+![](images/football.jpeg)
 
