@@ -1,58 +1,50 @@
-import random
-import config
-import matplotlib.pyplot as plt
-from data_extractor import get_data
-from models.vgg_rnn import VggRNN, VggLSTM
-from models.inception_rnn import InceptionRNN, InceptionLSTM
+import pickle
+
+from config import model_params, batch_params, train_params
+from load_data import LoadData
 from batch_generator import BatchGenerator
+from models.caption_model import CaptionLSTM
+from train_helper import calc_class_weights
+from train_helper import sample
+from train import train
+from test import test
 
 
-models = {"vggrnn": {"model": VggRNN,
-                     "params": config.VggRNNParams},
+def main(mode):
+    print('Loading data...')
+    data = LoadData(dataset_path='dataset',
+                    images_path='dataset/images/')
 
-          "vgglstm": {"model": VggLSTM,
-                      "params": config.VggLSTMParams},
+    print('Creating Batch Generator...')
+    batch_creator = BatchGenerator(data_dict=data.data_dict,
+                                   captions_int=data.captions_int,
+                                   image_addr=data.image_addr,
+                                   **batch_params)
 
-          "inceptionrnn": {"model": InceptionRNN,
-                           "params": config.InceptionRNNParams},
+    if mode == 'train':
+        print('Creating Models...')
+        caption_model = CaptionLSTM(model_params=model_params,
+                                    int2word=data.int2word)
 
-          "inceptionlstm": {"model": InceptionLSTM,
-                            "params": config.InceptionLSTMParams}
-          }
+        print('Starting training...')
+        class_weights = calc_class_weights(data.captions_int.values)
+        train(caption_model, batch_creator, class_weights, **train_params)
 
+    elif mode == 'sample':
+        print('Loading model...')
+        model_file = open('vgg_lstm.pkl', 'rb')
+        model = pickle.load(model_file)
+        print('Creating sample..')
+        sample(model, batch_creator, top_k=10, seq_len=16, show_image=True)
 
-extract_data = False
-
-
-def main():
-    data_parameters = config.DataParams().__dict__
-    model_parameters = models[data_parameters["model_name"]]["params"]().__dict__
-    parameters = model_parameters.copy()
-    parameters.update(data_parameters)
-
-    get_data(parameters)
-
-    model = models[parameters["model_name"]]["model"](parameters)
-    batch_gen = BatchGenerator(**parameters)
-
-    for e in range(parameters["num_epochs"]):
-        print("Epoch num: " + str(e))
-        for idx, (im, cap) in enumerate(batch_gen.generate('train')):
-            loss = model.fit(im, cap)
-            print("\rTraining: " + str(loss) + " [" + "="*idx, end="", flush=True)
-        print("]")
-
-        (im, cap) = next(batch_gen.generate("train"))
-        generated_caption = model.caption(im)
-        random_idx = random.sample(list(range(parameters["batch_size"])), 5)
-        for idx in random_idx:
-            cap = generated_caption[idx]
-            img = im[idx]
-            img = (img.permute(1, 2, 0) - img.min())/(img.max() - img.min())
-            plt.imshow(img)
-            plt.title(cap)
-            plt.show()
+    elif mode == 'test':
+        print('Loading model')
+        model_file = open('vgg_lstm.pkl', 'rb')
+        model = pickle.load(model_file)
+        print('Testing model...')
+        test(model, batch_creator, top_k=10, seq_len=16)
 
 
 if __name__ == '__main__':
-    main()
+    run_mode = 'train'
+    main(run_mode)
