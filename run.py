@@ -1,3 +1,4 @@
+import sys
 import pickle
 
 from config import model_params, batch_params, train_params
@@ -46,5 +47,9 @@ def main(mode):
 
 
 if __name__ == '__main__':
-    run_mode = 'train'
+    if len(sys.argv) == 1:
+        print('no arguments given, default process of training has started')
+        run_mode = 'train'
+    else:
+        run_mode = sys.argv[1]
     main(run_mode)
