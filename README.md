@@ -1,4 +1,4 @@
-# Image Captioning with <br/> Transfer Learning, Attention, Pretrained Embeddings, and Teacher Forching Techniques
+# Image Captioning with __Transfer Learning__, __Attention__, __Pretrained Embeddings__, and __Teacher Forching__ Techniques
 
 ## Installing
 
@@ -27,7 +27,7 @@ then you can run your `python` commands from there
  
 
 ### Data Set
-Selected dataset was flicker 30k in format of `.h5`. (Right now I am trying to provide a download link)
+Selected dataset was flicker 30k in format of `.h5`. (*Right now I am trying to provide a download link*)
 
 - This file includes urls for the images. To download images from those urls run `data_extractor.py`
 
@@ -43,7 +43,7 @@ For CNN architecture on image feature extraction pretrained VGG16 is used,
 
 ```
 self.vgg = models.vgg16(pretrained=self.pre_train)
-``` 
+```
 
 Until 15th epoch gradients of VGG16 is freezed. After Epoch 15 last layers activated
 
@@ -54,7 +54,7 @@ Attention model is implementation of [Show, Attend, and Tell](https://arxiv.org/
 In the implementation I get help from this [repo](https://github.com/sgrvinod/a-PyTorch-Tutorial-to-Image-Captioning) 
 
 ### Pretrained Embeddings
-   
+
 I have downloaded the [Fasttext](https://fasttext.cc/docs/en/crawl-vectors.html) trained embeddings for English
 
 In embedding layer `word2vec.py` transformer is called for every word in the dictionary. 
@@ -62,21 +62,42 @@ In embedding layer `word2vec.py` transformer is called for every word in the dic
 Obtained vectors create the weights of embedding layer.
 
 ### Teacher Forcing
-   
+
 In `dataset.py` you can see how the target captions are created.
-   
+
 ```
 # Target captions are one step forward of train captions
 target_captions = np.roll(train_captions, -1) 
-```  
+```
 
 Target captions are one step forward of training captions. 
 
 Thus network tries to predict next word from previous word given for training.
 
+## Architecture
+
+Here is feature extraction model. 'x_i' represents VGG16 output
+
+![WhatsApp Image 2020-01-12 at 16.24.10](/Users/selimfurkantekin/Downloads/WhatsApp Image 2020-01-12 at 16.24.10.jpeg)
+
+Here is captioning architecture
+
+![WhatsApp Image 2020-01-12 at 16.42.36](/Users/selimfurkantekin/Downloads/WhatsApp Image 2020-01-12 at 16.42.36.jpeg)
 
 ## Running
 
-You can run
+You can run in `train`, `sample`, and `test` modes e.g
+```
+$ python run.py train
+```
 
+## Results
+
+Our favorite wrong caption :)
+
+![WhatsApp Image 2020-01-12 at 17.19.41](/Users/selimfurkantekin/Dropbox/WhatsApp Image 2020-01-12 at 17.19.41.jpeg)
+
+Interestingly one of the actual captions below includes a caption related with soccer
+
+![WhatsApp Image 2020-01-12 at 11.20.30](/Users/selimfurkantekin/Downloads/WhatsApp Image 2020-01-12 at 11.20.30.jpeg)
 
