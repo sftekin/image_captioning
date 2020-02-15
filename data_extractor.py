@@ -4,7 +4,7 @@ import urllib.request
 
 recreate = 1
 
-file_name = "./dataset/eee443_project_dataset_train.h5"
+file_name = "./dataset/dataset.h5"
 
 if recreate:
     data = {}
@@ -29,7 +29,7 @@ for i in range(len(data["train_url"])):
     image_id = data["train_imid"][i]
     image_url = str(data["train_url"][i])[2:-2]
     try:
-        urllib.request.urlretrieve(image_url, "./dataset/images/" + str(image_id) + ".jpg")
+        urllib.request.urlretrieve(image_url, "./dataset/images/" + str(i) + ".jpg")
     except:
         corrupted_ids.append(i)
         corrupted_image_ids.append(i)
