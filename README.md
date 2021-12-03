@@ -1,4 +1,4 @@
-# Image Captioning with __Transfer Learning__, __Attention__, __Pretrained Embeddings__, and __Teacher Forching__ Techniques
+# Image Captioning with __Transfer Learning__, __Attention__, __Pretrained Embeddings__, and __Teacher Forcing__ Techniques
 
 ## Installing
 
